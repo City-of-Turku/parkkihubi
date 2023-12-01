@@ -21,7 +21,7 @@ drf-jwt-2fa
 lxml
 
 # WFS
-owslib
+owslib==0.25.0
 
 # Misc
 django-cors-headers

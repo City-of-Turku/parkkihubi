@@ -10,8 +10,8 @@ jobs:
   tests:
     strategy:
       matrix:
-        python: ["3.5", "3.6", "3.8"]
-    runs-on: ubuntu-20.04
+        python: ["3.10"]
+    runs-on: ubuntu-22.04
     container: "python:${{matrix.python}}-slim-buster"
     steps:
       - uses: actions/checkout@v3
@@ -82,7 +82,8 @@ jobs:
           python-version: "3.5"
 
       - name: Install GDAL
-        run: sudo apt-get install -y gdal-bin
+        run: sudo apt-get update && sudo apt-get install -y gdal-bin
+
         if: ${{ matrix.toxenv == 'sanitizer' }}
 
       - name: Install Tox and tox-gh-actions
