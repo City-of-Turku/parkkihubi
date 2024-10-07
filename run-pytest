@@ -44,9 +44,9 @@ misc_opts=(
 # docker compose down
 docker_compose_exec=("docker compose" "exec")
 
-if ! tty -s; then
-    docker_compose_exec+=("-T")  # If there is no TTY available, pass -T
-fi
+# if ! tty -s; then
+#     docker_compose_exec+=("-T")  # If there is no TTY available, pass -T
+# fi
 echo "-------------------------!!!!!!!!!!!!!11--------------"
 echo "docker_compose_exec: ${docker_compose_exec[@]}"
 echo "-------------------------!!!!!!!!!!!!!11--------------"
