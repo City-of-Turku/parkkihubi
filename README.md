@@ -35,8 +35,38 @@ In the debug panel you can run following with debugger enabled:
 * Django shell
 * Django migrations
 * Generate new Django migrations for all Django apps
+* React: Debug in Chrome (for the React dashboard)
 
 Happy hacking :)
+
+## React Dashboard
+
+The project includes a React-based dashboard located in the `dashboard/` directory. The dashboard is built with Create React App and TypeScript.
+
+### Development Setup
+
+The development container includes Node.js and yarn for React development. The React dashboard uses a separate development Dockerfile (`Dockerfile.dev`) that includes Node.js support, while keeping the production Dockerfile lean.
+
+### Running the Dashboard
+
+You can start the React development server using VS Code tasks:
+
+* **npm: start** - Start the React development server (runs on port 3000)
+* **npm: build** - Build the React app for production
+* **npm: test** - Run React tests
+
+The React development server will be available at `http://localhost:3000` when running in the devcontainer. Port 3000 is automatically forwarded when the devcontainer starts.
+
+### Debugging the Dashboard
+
+VS Code includes a Chrome debugging configuration for the React dashboard:
+
+* Select "React: Debug in Chrome" from the debug panel
+* Ensure the React dev server is running (use the "npm: start" task)
+* Set breakpoints in your TypeScript/React files
+* The debugger will connect to Chrome and allow you to debug your React application
+
+The Chrome debugging configuration requires the "Debugger for Chrome" VS Code extension (or the newer "JavaScript Debugger" extension), which is automatically installed in the devcontainer.
 
 ## Usage with docker-compose
 

@@ -3,15 +3,14 @@ services:
   runserver:
     user: bew
     image: parkkihubi-project-django-virtualenv
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     command: /home/bew/.venv/bin/python3 manage.py runserver 0.0.0.0:8000
     ports:
       - '8000:8000'
     volumes:
       - .:/parkkihub
-    links:
-      - postgresql
-      - memcached
     environment:
       # Project specific env vars for this project:
       - DATABASE_URL=postgis://parkkihubi:parkkihubi@postgresql/parkkihubi
@@ -45,7 +44,7 @@ services:
     volumes:
       - postgresql:/var/lib/postgresql/data
     ports:
-      - 5432
+      - '5432:5432'
     networks:
       - network
 

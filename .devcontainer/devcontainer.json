@@ -1,17 +1,17 @@
 {
   "name": "ParkkiHubi",
   "dockerComposeFile": [
-    "../docker-compose.yml",
-    "docker-compose.yml"
+    "../docker-compose.yml"
   ],
   "service": "runserver",
-  "workspaceFolder": "/home/bew/bew",
+  "workspaceFolder": "/parkkihub",
   "runServices": [
     "runserver",
     "postgresql",
     "memcached"
   ],
   "shutdownAction": "stopCompose",
+  "forwardPorts": [3000],
   "customizations": {
     "vscode": {
       "extensions": [
@@ -19,7 +19,10 @@
         "donjayamanne.githistory",
         "eamodio.gitlens",
         "davidanson.vscode-markdownlint",
-        "dakara.transformer"
+        "dakara.transformer",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
       ]
     }
   },
