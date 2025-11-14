@@ -14,9 +14,6 @@ tbody tr:nth-child(even) {
 .pagination {
     justify-content: flex-end;
 }
-.react-bootstrap-table-pagination {
-    align-items: center;
-}
 .page-item .page-link {
     color: #515455 !important;
 }

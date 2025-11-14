@@ -1,10 +1,8 @@
 import moment from 'moment';
 import { connect } from 'react-redux';
-import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
-
 
 import { Parking, ParkingProperties, RootState } from '../types';
+import LastParkingsTable from '../components/LastParkingsTable';
 import './LastParkingsTable.css'
 
 interface ParkingData extends ParkingProperties {
@@ -70,15 +68,8 @@ const mapStateToProps = (state: RootState) => {
         },
     ];
 
-    const pagination = paginationFactory({
-        sizePerPageList: [],
-        sizePerPage: 17,
-        page: 1,
-        showTotal: true,
-    });
-
-    return {data, columns, keyField: 'id', bordered: false, pagination};
+    return {data, columns, keyField: 'id'};
 }
 
-export default connect(mapStateToProps)(BootstrapTable);
+export default connect(mapStateToProps)(LastParkingsTable);
 
