@@ -17,7 +17,7 @@ if (config.isDev) {
   middlewares.push(createLogger() as any);
 }
 
-const composeEnhancers = (process.env.NODE_ENV === 'development'
+const composeEnhancers = (import.meta.env.MODE === 'development'
     && window
     && (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__)
   || compose;

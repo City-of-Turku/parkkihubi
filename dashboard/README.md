@@ -1,9 +1,10 @@
-This project was bootstrapped with [Create React App][1] with TypeScript
-scripts, [react-scripts-ts][2].
+This project uses [Vite][1] as the build tool with React and TypeScript.
 
-You will find some information on how to perform common tasks from
-[react-scripts-ts User Guide][3].
+## Available Scripts
 
-[1]: https://github.com/facebookincubator/create-react-app
-[2]: https://github.com/wmonk/create-react-app-typescript
-[3]: https://github.com/wmonk/create-react-app-typescript/blob/master/packages/react-scripts/template/README.md
+- `npm start` - Start the development server
+- `npm build` - Build for production
+- `npm preview` - Preview the production build
+- `npm test` - Run tests with Vitest
+
+[1]: https://vitejs.dev/

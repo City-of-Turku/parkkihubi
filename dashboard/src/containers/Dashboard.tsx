@@ -20,7 +20,7 @@ interface Props {
 
 
 class Dashboard extends Component<Props> {
-    timer: NodeJS.Timeout|null = null;
+    timer: number|null = null;
 
     timerInterval: number = 1000; // 1 second
 
