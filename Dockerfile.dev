@@ -49,14 +49,6 @@ RUN apt-get update \
     && ln -s /usr/bin/python3 /usr/local/bin/python \
     && apt-get clean
 
-# Install Node.js LTS (Node 20.x)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install --yes --no-install-recommends nodejs \
-    && apt-get clean
-
-# Install yarn globally
-RUN npm install -g yarn
-
 # Enable SSH
 COPY sshd_config /etc/ssh/
 

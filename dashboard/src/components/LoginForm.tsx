@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
-  Alert, Button, Form, FormGroup, Label, Input,
-} from 'reactstrap';
+  Alert, Button, Form,
+} from 'react-bootstrap';
 
 export interface Props {
     phase?: 'login' | 'verification-code';
@@ -22,15 +22,15 @@ const Field = ({ name, text, ...inputProps }: {
     text: string;
     [key: string]: {};
 }) => (
-  <FormGroup>
-    <Label for={name}>{text}</Label>
-    <Input
+  <Form.Group>
+    <Form.Label htmlFor={name}>{text}</Form.Label>
+    <Form.Control
       type={(name !== 'password') ? 'text' : 'password'}
       name={name}
       id={name}
       {...inputProps}
     />
-  </FormGroup>
+  </Form.Group>
 );
 
 export default class LoginForm extends React.Component<Props, State> {
@@ -45,6 +45,7 @@ export default class LoginForm extends React.Component<Props, State> {
 
   render() {
     return (
+
       <Form onSubmit={this.handleSubmit}>
         {(this.props.phase === 'login') ? (
           <>
@@ -61,7 +62,7 @@ export default class LoginForm extends React.Component<Props, State> {
               onChange={this.handleChange}
             />
             {(this.props.loginErrorMessage) ? (
-              <Alert color="danger">{this.props.loginErrorMessage}</Alert>
+              <Alert variant="danger">{this.props.loginErrorMessage}</Alert>
             ) : null}
           </>
         ) : (
@@ -73,7 +74,7 @@ export default class LoginForm extends React.Component<Props, State> {
               onChange={this.handleChange}
             />
             {(this.props.verificationCodeErrorMessage) ? (
-              <Alert color="danger">{this.props.verificationCodeErrorMessage}</Alert>
+              <Alert variant="danger">{this.props.verificationCodeErrorMessage}</Alert>
             ) : null}
           </>
         )}
@@ -81,7 +82,7 @@ export default class LoginForm extends React.Component<Props, State> {
             <Button
                 type="submit"
                 onClick={this.handleSubmit}
-                color="primary"
+                variant="primary"
                 className="submit-button d-flex align-items-center"
             >
                 {(this.props.phase === 'login') ? (

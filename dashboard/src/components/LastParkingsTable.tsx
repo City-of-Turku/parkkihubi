@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Pagination, PaginationItem, PaginationLink } from 'reactstrap';
+import { Table, Pagination } from 'react-bootstrap';
 
 interface Column {
     text: string;
@@ -36,7 +36,7 @@ const LastParkingsTable: React.FC<LastParkingsTableProps> = ({ data, columns, ke
     const getPageNumbers = () => {
         const pages: (number | string)[] = [];
         const maxPagesToShow = 5;
-        
+
         if (totalPages <= maxPagesToShow) {
             for (let i = 1; i <= totalPages; i++) {
                 pages.push(i);
@@ -64,13 +64,13 @@ const LastParkingsTable: React.FC<LastParkingsTableProps> = ({ data, columns, ke
                 pages.push(totalPages);
             }
         }
-        
+
         return pages;
     };
 
     return (
         <div>
-            <Table>
+            <Table striped>
                 <thead>
                     <tr>
                         {columns.map((column, index) => (
@@ -85,8 +85,8 @@ const LastParkingsTable: React.FC<LastParkingsTableProps> = ({ data, columns, ke
                         <tr key={row[keyField]}>
                             {columns.map((column, index) => {
                                 const value = row[column.dataField];
-                                const displayValue = column.formatter 
-                                    ? column.formatter(value) 
+                                const displayValue = column.formatter
+                                    ? column.formatter(value)
                                     : value;
                                 return (
                                     <td key={index} {...column.attrs}>
@@ -98,37 +98,40 @@ const LastParkingsTable: React.FC<LastParkingsTableProps> = ({ data, columns, ke
                     ))}
                 </tbody>
             </Table>
-            
 
+
+            {data.length > 0 && (
                 <div className="d-flex justify-content-between align-items-center">
                     <div>
-                        Showing {startIndex + 1} to {Math.min(endIndex, data.length)} of {data.length} entries
+                        Näytetään merkinnät {startIndex + 1}-{Math.min(endIndex, data.length)}, yhteensä {data.length} merkintää
                     </div>
                     <Pagination>
-                        <PaginationItem disabled={currentPage === 1}>
-                            <PaginationLink previous onClick={() => handlePageChange(currentPage - 1)} />
-                        </PaginationItem>
-                        
+                        <Pagination.Prev
+                            disabled={currentPage === 1}
+                            onClick={() => handlePageChange(currentPage - 1)}
+                        />
+
                         {getPageNumbers().map((page, index) => (
                             typeof page === 'number' ? (
-                                <PaginationItem key={index} active={page === currentPage}>
-                                    <PaginationLink onClick={() => handlePageChange(page)}>
-                                        {page}
-                                    </PaginationLink>
-                                </PaginationItem>
+                                <Pagination.Item
+                                    key={index}
+                                    active={page === currentPage}
+                                    onClick={() => handlePageChange(page)}
+                                >
+                                    {page}
+                                </Pagination.Item>
                             ) : (
-                                <PaginationItem key={index} disabled>
-                                    <PaginationLink>...</PaginationLink>
-                                </PaginationItem>
+                                <Pagination.Ellipsis key={index} disabled />
                             )
                         ))}
-                        
-                        <PaginationItem disabled={currentPage === totalPages}>
-                            <PaginationLink next onClick={() => handlePageChange(currentPage + 1)} />
-                        </PaginationItem>
+
+                        <Pagination.Next
+                            disabled={currentPage === totalPages}
+                            onClick={() => handlePageChange(currentPage + 1)}
+                        />
                     </Pagination>
                 </div>
-
+            )}
         </div>
     );
 };

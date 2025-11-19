@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { Button } from 'reactstrap';
+import { Button } from 'react-bootstrap';
 
 import RegionSelector from './RegionSelector';
 import * as dispatchers from '../dispatchers';
@@ -72,7 +72,7 @@ class Dashboard extends Component<Props> {
               <Button
                   className="submit-button d-flex align-items-center"
                   onClick={this.props.onLogout}
-                  color="danger"
+                  variant="danger"
               >
                   <span>Kirjaudu ulos</span>
                   <i className="fa fa-sign-out" />
