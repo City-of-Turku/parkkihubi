@@ -42,20 +42,9 @@ Happy hacking :)
 
 The project includes a React-based dashboard located in the `dashboard/` directory. The dashboard is built with Vite and TypeScript. Check the README.md under the directory for further info.
 
-### Debugging the Dashboard
-
-VS Code includes a Chrome debugging configuration for the React dashboard:
-
-* Select "React: Debug in Chrome" from the debug panel
-* Ensure the React dev server is running (use the "npm: start" task)
-* Set breakpoints in your TypeScript/React files
-* The debugger will connect to Chrome and allow you to debug your React application
-
-The Chrome debugging configuration requires the "Debugger for Chrome" VS Code extension (or the newer "JavaScript Debugger" extension), which is automatically installed in the devcontainer.
-
 ## Usage with docker-compose
 
-Development environment can also be run directtly with docker-compose. For this to
+Development environment can also be run directly with docker-compose. For this to
 work `local_settings.py` -file needs to be created. Easiest way to do this is to copy
 template file to proper location.
 
