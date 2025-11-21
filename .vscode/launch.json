@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Django: Runserver",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": [
@@ -16,7 +16,7 @@
     },
     {
       "name": "Django: Runserver - nonthreading",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": [
@@ -30,7 +30,7 @@
     },
     {
       "name": "Django: Shell",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": [
@@ -41,7 +41,7 @@
     },
     {
       "name": "Django: Migrate",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": [
@@ -52,7 +52,7 @@
     },
     {
       "name": "Django: Make migrations",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": [
@@ -63,7 +63,7 @@
     },
     {
       "name": "Django: Collectstatic",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": [
@@ -75,12 +75,23 @@
     },
     {
       "name": "Run pytest",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "pytest",
       "args": [],
       "django": true,
       "justMyCode": false
+    },
+    {
+      "name": "React: Debug in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/dashboard",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/src/*"
+      }
     }
   ]
 }

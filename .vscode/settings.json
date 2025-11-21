@@ -13,5 +13,29 @@
   "gitlens.currentLine.enabled": false,
   "[python]": {
     "editor.tabSize": 2
+  },
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "typescript.tsdk": "dashboard/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.associations": {
+    "*.tsx": "typescriptreact",
+    "*.ts": "typescript"
   }
 }

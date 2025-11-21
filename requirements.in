@@ -1,5 +1,5 @@
 # Django
-Django~=4.2.0
+Django~=4.2.26
 
 # Settings
 django-environ

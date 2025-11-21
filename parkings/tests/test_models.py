@@ -3,7 +3,7 @@ import datetime
 import pytest
 from django.contrib.gis.geos import Point
 from django.test import override_settings
-from django.utils.timezone import now, utc
+from django.utils.timezone import now
 
 from parkings.factories.parking import create_payment_zone
 from parkings.models import Operator, Parking, ParkingCheck, ParkingTerminal
@@ -35,21 +35,21 @@ def create_parking(enforcer, operator_id=1, registration_number='ABC-123', **kwa
 @override_settings(TIME_ZONE='Europe/Helsinki')
 def test_parking_str(parking_factory):
     parking = parking_factory(
-        time_start=datetime.datetime(2014, 1, 1, 6, 0, 0, tzinfo=utc),
-        time_end=datetime.datetime(2016, 1, 1, 7, 0, 0, tzinfo=utc),
+        time_start=datetime.datetime(2014, 1, 1, 6, 0, 0, tzinfo=datetime.timezone.utc),
+        time_end=datetime.datetime(2016, 1, 1, 7, 0, 0, tzinfo=datetime.timezone.utc),
         registration_number='ABC-123',
     )
     assert all(str(parking).count(val) == 1 for val in ('2014', '2016', '8', '9', 'ABC-123'))
 
     parking = parking_factory(
-        time_start=datetime.datetime(2016, 1, 1, 6, 0, 0, tzinfo=utc),
-        time_end=datetime.datetime(2016, 1, 1, 7, 0, 0, tzinfo=utc),
+        time_start=datetime.datetime(2016, 1, 1, 6, 0, 0, tzinfo=datetime.timezone.utc),
+        time_end=datetime.datetime(2016, 1, 1, 7, 0, 0, tzinfo=datetime.timezone.utc),
         registration_number='ABC-123',
     )
     assert all(str(parking).count(val) == 1 for val in ('2016', '8', '9', 'ABC-123'))
 
     parking = parking_factory(
-        time_start=datetime.datetime(2016, 1, 1, 6, 0, 0, tzinfo=utc),
+        time_start=datetime.datetime(2016, 1, 1, 6, 0, 0, tzinfo=datetime.timezone.utc),
         time_end=None,
         registration_number='ABC-123',
     )
@@ -58,8 +58,8 @@ def test_parking_str(parking_factory):
 
 def test_parking_check_str():
     parking_check = ParkingCheck(
-        created_at=datetime.datetime(2014, 1, 1, 6, 0, 0, tzinfo=utc),
-        time=datetime.datetime(2015, 1, 1, 12, 0, 0, tzinfo=utc),
+        created_at=datetime.datetime(2014, 1, 1, 6, 0, 0, tzinfo=datetime.timezone.utc),
+        time=datetime.datetime(2015, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc),
         time_overridden=True,
         registration_number='ABC-123',
         location=Point(60.193609, 24.951394),

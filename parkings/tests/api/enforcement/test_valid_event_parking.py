@@ -1,10 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from django.contrib.gis.geos import Point
 from django.test import override_settings
 from django.urls import reverse
-from django.utils.timezone import utc
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN)
 
@@ -188,15 +187,15 @@ def test_time_filtering(operator, enforcer_api_client, event_parking_factory, na
     event_area = event_area_factory.create(geom=create_area_geom(), domain=enforcer.enforced_domain)
     p1 = event_parking_factory(
         registration_number='ABC-123',
-        time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=utc),
-        time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
+        time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
         operator=operator,
         domain=enforcer.enforced_domain,
         event_area=event_area)
     p2 = event_parking_factory(
         registration_number='ABC-123',
-        time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
-        time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=utc),
+        time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+        time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
         operator=operator,
         domain=enforcer.enforced_domain,
         event_area=event_area)
