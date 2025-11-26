@@ -38,9 +38,13 @@ In the debug panel you can run following with debugger enabled:
 
 Happy hacking :)
 
+## React Dashboard
+
+The project includes a React-based dashboard located in the `dashboard/` directory. The dashboard is built with Vite and TypeScript. Check the README.md under the directory for further info.
+
 ## Usage with docker-compose
 
-Development environment can also be run directtly with docker-compose. For this to
+Development environment can also be run directly with docker-compose. For this to
 work `local_settings.py` -file needs to be created. Easiest way to do this is to copy
 template file to proper location.
 

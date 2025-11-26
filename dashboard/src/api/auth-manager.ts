@@ -1,4 +1,4 @@
-import * as axios from 'axios';
+import { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 import { Api } from './index';
 import { AuthToken, CodeToken } from './types';
@@ -37,11 +37,11 @@ export default class AuthManager {
     public maxTokenAge: number = 5 * 60 * 1000;  // 5 minutes
 
     private _api: Api;
-    private _axios: axios.AxiosInstance;
+    private _axios: AxiosInstance;
     private _authInterceptorId: number | null = null;
     private _tokenRefreshPromise: Promise<AuthToken> | null = null;
 
-    constructor(api: Api, axiosInstance: axios.AxiosInstance) {
+    constructor(api: Api, axiosInstance: AxiosInstance) {
         this._api = api;
         this._axios = axiosInstance;
     }
@@ -103,17 +103,13 @@ export default class AuthManager {
         }
     }
 
-    private _authRequestInterceptor = (request: axios.AxiosRequestConfig) => {
+    private _authRequestInterceptor = (config: InternalAxiosRequestConfig) => {
         if ((tokenStorage.getTokenAge() || 0) > this.maxTokenAge) {
             this._refreshToken();
         }
-        return {
-            ...request,
-            headers: {
-                ...request.headers,
-                'Authorization': `JWT ${tokenStorage.getToken()}`,
-            }
-        };
+
+        config.headers.Authorization = `JWT ${tokenStorage.getToken()}`;
+        return config;
     }
 
     private _refreshToken: (() => Promise<AuthToken>) = () => {
