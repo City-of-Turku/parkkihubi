@@ -161,6 +161,7 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
         'allowed', 'result', 'performer', 'created_at',
         'found_parking', 'found_event_parking'
     ]
+    list_filter = ['time']
 
     modifiable = False
 
