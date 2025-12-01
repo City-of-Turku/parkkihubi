@@ -124,7 +124,7 @@ class EventParkingAdmin(OSMGeoAdmin):
         'id', 'operator', 'domain', 'event_area',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'domain', 'event_area']
+    list_filter = ['operator', 'domain', 'event_area', 'time_start', 'time_end']
     ordering = ('-time_start',)
     search_fields = ['registration_number']
     exclude = ['location_gk25fin']
