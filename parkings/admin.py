@@ -53,7 +53,7 @@ class ParkingAdmin(OSMGeoAdmin):
         'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'domain', 'zone', 'time_start', 'time_end']
+    list_filter = ['operator', 'domain', 'zone', 'time_start', 'time_end', 'terminal_number', 'parking_area']
     ordering = ('-time_start',)
     search_fields = ['registration_number', 'parking_area__origin_id']
     exclude = ['location_gk25fin']
