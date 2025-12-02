@@ -1,4 +1,6 @@
 from django.contrib import admin
+import csv
+from django.http import HttpResponse
 
 
 class ReadOnlyAdmin(admin.ModelAdmin):
@@ -25,3 +27,16 @@ class WithAreaField:
         unit = 'km\u00b2' if self.area_scale == 1000000 else 'm\u00b2'
         return '{area:.1f} {unit}'.format(
             area=instance.geom.area / self.area_scale, unit=unit)
+
+
+def export_as_csv(admin, request, queryset):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{admin.model._meta.model_name}.csv"'
+    writer = csv.writer(response)
+    field_names = [field.name for field in admin.model._meta.fields]
+    writer.writerow(field_names)
+    for obj in queryset:
+        row = [getattr(obj, field) for field in field_names]
+        writer.writerow(row)
+
+    return response

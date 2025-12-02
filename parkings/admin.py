@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import models
 
-from .admin_utils import ReadOnlyAdmin, WithAreaField
+from .admin_utils import ReadOnlyAdmin, WithAreaField, export_as_csv
 from .models import (
     ArchivedParking, DataUser, EnforcementDomain, Enforcer, EventArea,
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
@@ -57,6 +57,7 @@ class ParkingAdmin(OSMGeoAdmin):
     ordering = ('-time_start',)
     search_fields = ['registration_number', 'parking_area__origin_id']
     exclude = ['location_gk25fin']
+    actions = [export_as_csv]
 
 
 @admin.register(Region)
@@ -128,6 +129,7 @@ class EventParkingAdmin(OSMGeoAdmin):
     ordering = ('-time_start',)
     search_fields = ['registration_number']
     exclude = ['location_gk25fin']
+    actions = [export_as_csv]
 
 
 @admin.register(EventAreaStatistics)
