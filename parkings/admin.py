@@ -164,6 +164,7 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
         'found_parking', 'found_event_parking'
     ]
     list_filter = ['time']
+    actions = [export_as_csv]
 
     modifiable = False
 
