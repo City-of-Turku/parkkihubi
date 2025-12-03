@@ -9,6 +9,7 @@ from .models import (
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
     ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
     PermitLookupItem, PermitSeries, Region)
+from .models.utils import normalize_reg_num
 
 
 @admin.register(Enforcer)
@@ -58,6 +59,7 @@ class ParkingAdmin(OSMGeoAdmin):
     search_fields = ['registration_number', 'parking_area__origin_id']
     exclude = ['location_gk25fin']
     actions = [export_as_csv]
+    exclude_csv_fields = ['registration_number', 'normalized_reg_num']
 
 
 @admin.register(Region)
@@ -130,6 +132,7 @@ class EventParkingAdmin(OSMGeoAdmin):
     search_fields = ['registration_number']
     exclude = ['location_gk25fin']
     actions = [export_as_csv]
+    exclude_csv_fields = ['registration_number', 'normalized_reg_num']
 
 
 @admin.register(EventAreaStatistics)

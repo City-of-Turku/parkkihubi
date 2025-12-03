@@ -33,8 +33,12 @@ def export_as_csv(admin, request, queryset):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{admin.model._meta.model_name}.csv"'
     writer = csv.writer(response)
-    field_names = [field.name for field in admin.model._meta.fields]
+    all_fields = [field.name for field in admin.model._meta.fields]
+    # Fields can be left out with extra argument
+    exclude_fields = getattr(admin, 'exclude_csv_fields', [])
+    field_names = [f for f in all_fields if f not in exclude_fields]
     writer.writerow(field_names)
+
     for obj in queryset:
         row = [getattr(obj, field) for field in field_names]
         writer.writerow(row)
