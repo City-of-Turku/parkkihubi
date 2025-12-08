@@ -9,6 +9,7 @@ from .constants import WGS84_SRID
 from .event_parking import EventParking
 from .mixins import AnonymizableRegNumQuerySet
 from .parking import Parking
+from .utils import _format_coordinates
 
 
 class ParkingCheckQuerySet(AnonymizableRegNumQuerySet, models.QuerySet):
@@ -71,14 +72,3 @@ class ParkingCheck(models.Model):
             area=location_data.get("permit_area") or "-",
             regnum=self.registration_number,
             ok="OK" if self.allowed else "x")
-
-
-def _format_coordinates(location, prec=5):
-    assert location.srid == WGS84_SRID
-    longitude = location.coords[0]
-    latitude = location.coords[1]
-    e_or_w = "E" if longitude >= 0.0 else "W"
-    n_or_s = "N" if latitude >= 0.0 else "S"
-    return "{latitude:.{prec}f}{n_or_s} {longitude:.{prec}f}{e_or_w}".format(
-        latitude=abs(latitude), longitude=abs(longitude),
-        prec=prec, n_or_s=n_or_s, e_or_w=e_or_w)
