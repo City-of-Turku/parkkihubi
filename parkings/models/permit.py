@@ -69,7 +69,7 @@ class PermitSeries(TimestampedModelMixin, models.Model):
     active = models.BooleanField(default=False)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("owner"))
-    type = models.CharField(max_length=32, choices=PERMIT_TYPES)
+    type = models.CharField(max_length=32, choices=PERMIT_TYPES, null=True, blank=True)
     objects = PermitSeriesQuerySet.as_manager()
 
     class Meta:
