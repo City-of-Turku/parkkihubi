@@ -189,7 +189,7 @@ class PermitAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'domain', 'series', 'external_id',
         'item_count', 'created_at', 'modified_at']
-    list_filter = ['series__active', 'domain', 'series__owner']
+    list_filter = ['series__active', 'domain', 'series__owner', 'series__type']
     ordering = ('-series', '-id')
 
     def get_queryset(self, request):
@@ -236,7 +236,7 @@ class PermitSeriesAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'active', 'owner', 'permit_count',
         'created_at', 'modified_at']
-    list_filter = ['active', 'owner']
+    list_filter = ['active', 'owner', 'type']
     ordering = ('-created_at', '-id')
 
     def get_queryset(self, request):
