@@ -340,10 +340,13 @@ components:
         address:
           description: Permit owner's address
           type: string
+          maxLength: 50
+          nullable: true
         zip:
           description: Permit owner's zip code
           type: string
           maxLength: 10
+          nullable: true
     PermitAreas:
       description: >-
         List of permit area codes with validity time ranges
