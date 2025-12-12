@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ..fields import CleaningJsonField
-from ..validators import DictListValidator, TextField, TimestampField
+from ..validators import DictListValidator, TextField, TimestampField, NullableTextField
 from .constants import GK25FIN_SRID, PERMIT_TYPES
 from .enforcement_domain import EnforcementDomain
 from .mixins import AnonymizableRegNumQuerySet, TimestampedModelMixin
@@ -200,8 +200,8 @@ class Permit(TimestampedModelMixin, models.Model):
         'start_time': TimestampField(),
         'end_time': TimestampField(),
         'registration_number': TextField(max_length=20),
-        'address': TextField(max_length=50),
-        'zip': TextField(max_length=10),
+        'address': NullableTextField(max_length=50, allow_null=True),
+        'zip': NullableTextField(max_length=10, allow_null=True),
     })])
     areas = CleaningJsonField(blank=True, validators=[DictListValidator({
         'start_time': TimestampField(),
