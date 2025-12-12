@@ -200,6 +200,8 @@ class Permit(TimestampedModelMixin, models.Model):
         'start_time': TimestampField(),
         'end_time': TimestampField(),
         'registration_number': TextField(max_length=20),
+        'address': TextField(max_length=50),
+        'zip': TextField(max_length=10),
     })])
     areas = CleaningJsonField(blank=True, validators=[DictListValidator({
         'start_time': TimestampField(),
@@ -261,6 +263,8 @@ class Permit(TimestampedModelMixin, models.Model):
                 registration_number=subject["registration_number"],
                 start_time=subject["start_time"],
                 end_time=subject["end_time"],
+                address=subject["address"],
+                zip=subject["zip"]
             )
             for subject in self.subjects
         ]
@@ -330,6 +334,8 @@ class PermitSubjectItem(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     registration_number = models.CharField(max_length=20)
+    address = models.CharField(max_length=50, null=True)
+    zip = models.CharField(max_length=10, null=True)
 
     objects = PermitSubjectItemQuerySet.as_manager()
 

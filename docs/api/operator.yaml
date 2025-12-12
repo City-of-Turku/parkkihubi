@@ -337,6 +337,13 @@ components:
             Registration number of vehicle, which is subject to the permit
           type: string
           maxLength: 20
+        address:
+          description: Permit owner's address
+          type: string
+        zip:
+          description: Permit owner's zip code
+          type: string
+          maxLength: 10
     PermitAreas:
       description: >-
         List of permit area codes with validity time ranges
@@ -1081,6 +1088,7 @@ paths:
               required:
                 - series
                 - domain
+                - external_id
                 - subjects
                 - areas
       responses:
