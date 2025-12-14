@@ -192,6 +192,9 @@ class PermitAdmin(admin.ModelAdmin):
     list_filter = ['series__active', 'domain', 'series__owner', 'series__type']
     ordering = ('-series', '-id')
     search_fields = ['id', 'subject_items__address', 'subject_items__zip']
+    search_help_text = (
+        "Search by ZIP (exact) or address (contains). "
+        "Combine terms with spaces or commas.")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
