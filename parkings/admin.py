@@ -191,6 +191,7 @@ class PermitAdmin(admin.ModelAdmin):
         'item_count', 'created_at', 'modified_at']
     list_filter = ['series__active', 'domain', 'series__owner', 'series__type']
     ordering = ('-series', '-id')
+    search_fields = ['id', 'subject_items__address', 'subject_items__zip']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
