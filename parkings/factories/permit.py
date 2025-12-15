@@ -32,7 +32,7 @@ def generate_subjects(count=1):
             'start_time': generate_timestamp_string('-2h', '-1h'),
             'end_time': generate_timestamp_string('+1h', '+2h'),
             'address': fake.street_address(),
-            'zip_code': fake.zipcode(),
+            'zip_code': fake.postcode(),
         })
     return subjects
 
