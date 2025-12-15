@@ -1,0 +1,161 @@
+
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a id="open-stats"
+           href="{% url 'admin:parkings-permitseries-stats-json' %}">
+            View statistics
+        </a>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .permit-stats-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 1000;
+        }
+        .permit-stats-modal {
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--body-bg);
+            padding: 16px 20px;
+            border: var(--object-tools-fg);
+            border-radius: 6px;
+            width: 520px;
+            max-width: calc(100% - 40px);
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .permit-stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .permit-stats-close {
+            border: none;
+            background: transparent;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--object-tools-fg);
+        }
+        .permit-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .permit-stats-table th,
+        .permit-stats-table td {
+            padding: 6px 8px;
+            border-bottom: var(--object-tools-fg);
+        }
+        .permit-stats-table th {
+            background: var(--primary);
+        }
+    </style>
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+
+    <div class="permit-stats-modal-backdrop" id="permit-stats-backdrop"></div>
+
+    <div class="permit-stats-modal" id="permit-stats-modal"
+         aria-modal="true" role="dialog" aria-labelledby="permit-stats-title">
+        <div class="permit-stats-header">
+            <h2 id="permit-stats-title">Active permits by type</h2>
+            <button id="permit-stats-close" class="permit-stats-close" aria-label="Close">×</button>
+        </div>
+
+        <div>
+            <table class="permit-stats-table">
+                <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Display name</th>
+                    <th>Active count</th>
+                </tr>
+                </thead>
+                <tbody id="permit-stats-rows">
+                <tr><td colspan="3">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const openBtn = document.getElementById('open-stats');
+            const modal = document.getElementById('permit-stats-modal');
+            const backdrop = document.getElementById('permit-stats-backdrop');
+            const closeBtn = document.getElementById('permit-stats-close');
+            const rows = document.getElementById('permit-stats-rows');
+
+            function openModal() {
+                backdrop.style.display = 'block';
+                modal.style.display = 'block';
+            }
+
+            function closeModal() {
+                modal.style.display = 'none';
+                backdrop.style.display = 'none';
+            }
+
+            function renderRows(items) {
+                rows.innerHTML = '';
+
+                if (!items || !items.length) {
+                    rows.innerHTML = '<tr><td colspan="3">No data</td></tr>';
+                    return;
+                }
+
+                items.forEach(({ code, label, count }) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><code>${code}</code></td>
+                        <td>${label}</td>
+                        <td>${count}</td>
+                    `;
+                    rows.appendChild(tr);
+                });
+            }
+
+            function fetchStats() {
+                let base = window.location.pathname;
+                if (!base.endsWith('/')) base += '/';
+                const url = base + 'stats-json/';
+
+                rows.innerHTML = '<tr><td colspan="3">Loading…</td></tr>';
+
+                fetch(url, { credentials: 'same-origin' })
+                    .then(r => r.json())
+                    .then(({ data }) => renderRows(data))
+                    .catch(err => {
+                        console.error('Error loading stats:', err);
+                        rows.innerHTML = '<tr><td colspan="3">Error loading stats</td></tr>';
+                    });
+            }
+
+            openBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetchStats();
+                openModal();
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeModal);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeModal();
+            });
+        })();
+    </script>
+{% endblock %}

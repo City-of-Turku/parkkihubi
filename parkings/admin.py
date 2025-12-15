@@ -2,6 +2,9 @@ from django import forms
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import models
+from django.db.models import Count
+from django.urls import path
+from django.http import JsonResponse
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
@@ -9,6 +12,7 @@ from .models import (
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
     ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
     PermitLookupItem, PermitSeries, Region)
+from .models.constants import PERMIT_TYPES
 
 
 @admin.register(Enforcer)
@@ -243,9 +247,39 @@ class PermitSeriesAdmin(admin.ModelAdmin):
     list_filter = ['active', 'owner', 'type']
     ordering = ('-created_at', '-id')
 
+    change_list_template = 'admin/parkings/permitseries/change_list.html'
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.annotate(permit_count=models.Count('permit'))
 
     def permit_count(self, instance):
         return instance.permit_count
+
+    def get_urls(self):
+        urls = super().get_urls()
+        return [
+            path(
+                'stats-json/',
+                self.admin_site.admin_view(self.stats_json_view),
+                name='parkings-permitseries-stats-json',
+            ),
+        ] + urls
+
+    def stats_json_view(self, request):
+        """
+        Returns JSON: [{code, label, count}] for active=True grouped by type.
+        """
+        qs = (
+            PermitSeries.objects
+                .filter(active=True)
+                .values('type')
+                .annotate(count=Count('id'))
+        )
+        counts_by_code = {row['type']: row['count'] for row in qs}
+
+        data = [
+            {'code': code, 'label': label, 'count': counts_by_code.get(code, 0)}
+            for code, label in PERMIT_TYPES
+        ]
+        return JsonResponse({'data': data})
