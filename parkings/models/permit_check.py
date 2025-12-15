@@ -15,6 +15,7 @@ class PermitCheckQuerySet(AnonymizableRegNumQuerySet, models.QuerySet):
     def created_before(self, time):
         return self.filter(created_at__lt=time)
 
+
 class PermitCheck(models.Model):
     """
     A performed check of allowance of a parking permit.

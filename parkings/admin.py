@@ -3,15 +3,15 @@ from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import models
 from django.db.models import Count
-from django.urls import path
 from django.http import JsonResponse
+from django.urls import path
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
     ArchivedParking, DataUser, EnforcementDomain, Enforcer, EventArea,
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
     ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
-    PermitLookupItem, PermitSeries, Region, PermitCheck)
+    PermitCheck, PermitLookupItem, PermitSeries, Region)
 from .models.constants import PERMIT_TYPES
 
 
@@ -272,9 +272,9 @@ class PermitSeriesAdmin(admin.ModelAdmin):
         """
         qs = (
             PermitSeries.objects
-                .filter(active=True)
-                .values('type')
-                .annotate(count=Count('id'))
+            .filter(active=True)
+            .values('type')
+            .annotate(count=Count('id'))
         )
         counts_by_code = {row['type']: row['count'] for row in qs}
 

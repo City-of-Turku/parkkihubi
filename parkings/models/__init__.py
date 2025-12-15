@@ -34,7 +34,7 @@ __all__ = [
     'Permit',
     'PermitArea',
     'PermitAreaItem',
-    'PermitCheck'
+    'PermitCheck',
     'PermitLookupItem',
     'PermitSeries',
     'PermitSubjectItem',

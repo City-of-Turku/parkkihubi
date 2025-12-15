@@ -10,7 +10,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ..fields import CleaningJsonField
-from ..validators import DictListValidator, TextField, TimestampField, NullableTextField
+from ..validators import (
+    DictListValidator, NullableTextField, TextField, TimestampField)
 from .constants import GK25FIN_SRID, PERMIT_TYPES
 from .enforcement_domain import EnforcementDomain
 from .mixins import AnonymizableRegNumQuerySet, TimestampedModelMixin
