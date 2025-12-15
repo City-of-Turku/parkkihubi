@@ -11,7 +11,7 @@ from .models import (
     ArchivedParking, DataUser, EnforcementDomain, Enforcer, EventArea,
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
     ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
-    PermitLookupItem, PermitSeries, Region)
+    PermitLookupItem, PermitSeries, Region, PermitCheck)
 from .models.constants import PERMIT_TYPES
 
 
@@ -283,3 +283,26 @@ class PermitSeriesAdmin(admin.ModelAdmin):
             for code, label in PERMIT_TYPES
         ]
         return JsonResponse({'data': data})
+
+
+@admin.register(PermitCheck)
+class PermitCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+    list_display = [
+        'id', 'time', 'registration_number', 'location',
+        'allowed', 'result', 'performer', 'created_at',
+        'found_permit'
+    ]
+
+    modifiable = False
+
+    def get_readonly_fields(self, request, obj=None):
+        # Remove location from readonly fields, because otherwise the
+        # map won't be rendered at all.  The class level
+        # "modifiable=False" will take care of not allowing the location
+        # to be modified.
+        fields = super().get_readonly_fields(request, obj)
+        return [x for x in fields if x != 'location']
+
+    def has_change_permission(self, request, obj=None):
+        # Needed to make the map visible for the location field
+        return True
