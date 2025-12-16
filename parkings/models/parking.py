@@ -273,6 +273,7 @@ class ArchivedParking(AbstractArchivedParking):
             return 0  # Nothing to do, since already archived
         with transaction.atomic():
             archive_copies = cls._create_copies_to_archive(parkings)
+            archive_copies.anonymize()
             to_delete = parkings.filter(pk__in=archive_copies)
             (deleted_count, _counts_by_type) = to_delete.delete()
         return (archive_copies, deleted_count)
