@@ -5,24 +5,23 @@ from django.db import models
 from django.db.models import JSONField
 from django.utils.translation import gettext_lazy as _
 
-from .constants import WGS84_SRID
-from .event_parking import EventParking
-from .mixins import AnonymizableRegNumQuerySet
-from .parking import Parking
-from .utils import _format_coordinates
+from parkings.models import Permit
+from parkings.models.constants import WGS84_SRID
+from parkings.models.mixins import AnonymizableRegNumQuerySet
+from parkings.models.utils import _format_coordinates
 
 
-class ParkingCheckQuerySet(AnonymizableRegNumQuerySet, models.QuerySet):
+class PermitCheckQuerySet(AnonymizableRegNumQuerySet, models.QuerySet):
     def created_before(self, time):
         return self.filter(created_at__lt=time)
 
 
-class ParkingCheck(models.Model):
+class PermitCheck(models.Model):
     """
-    A performed check of allowance of a parking.
+    A performed check of allowance of a parking permit.
 
     An instance is stored for each checking action done via the
-    check_parking endpoint.  Each instance records the query parameters
+    check_permit endpoint.  Each instance records the query parameters
     and the results of the check.
     """
     # Metadata
@@ -45,20 +44,17 @@ class ParkingCheck(models.Model):
     # Results
     result = JSONField(
         blank=True, encoder=DjangoJSONEncoder, verbose_name=_("result"))
-    allowed = models.BooleanField(verbose_name=_("parking was allowed"))
-    found_parking = models.ForeignKey(
-        Parking, on_delete=models.SET_NULL,
-        null=True, blank=True, verbose_name=_("found parking"))
-    found_event_parking = models.ForeignKey(
-        EventParking, on_delete=models.SET_NULL,
-        null=True, blank=True, verbose_name=_("found event parking"))
+    allowed = models.BooleanField(verbose_name=_("permit was allowed"))
+    found_permit = models.ForeignKey(
+        Permit, on_delete=models.SET_NULL,
+        null=True, blank=True, verbose_name=_("found permit"))
 
-    objects = ParkingCheckQuerySet.as_manager()
+    objects = PermitCheckQuerySet.as_manager()
 
     class Meta:
         ordering = ("-created_at", "-id")
-        verbose_name = _("parking check")
-        verbose_name_plural = _("parking checks")
+        verbose_name = _("parking permit check")
+        verbose_name_plural = _("parking permit checks")
 
     def __str__(self):
         location_data = (self.result.get("location")

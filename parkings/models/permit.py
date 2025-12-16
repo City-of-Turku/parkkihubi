@@ -10,8 +10,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ..fields import CleaningJsonField
-from ..validators import DictListValidator, TextField, TimestampField
-from .constants import GK25FIN_SRID
+from ..validators import (
+    DictListValidator, NullableTextField, TextField, TimestampField)
+from .constants import GK25FIN_SRID, PERMIT_TYPES
 from .enforcement_domain import EnforcementDomain
 from .mixins import AnonymizableRegNumQuerySet, TimestampedModelMixin
 from .utils import normalize_reg_num
@@ -69,6 +70,7 @@ class PermitSeries(TimestampedModelMixin, models.Model):
     active = models.BooleanField(default=False)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("owner"))
+    type = models.CharField(max_length=32, choices=PERMIT_TYPES, null=True, blank=True)
     objects = PermitSeriesQuerySet.as_manager()
 
     class Meta:
@@ -199,6 +201,8 @@ class Permit(TimestampedModelMixin, models.Model):
         'start_time': TimestampField(),
         'end_time': TimestampField(),
         'registration_number': TextField(max_length=20),
+        'address': NullableTextField(max_length=50, allow_null=True),
+        'zip': NullableTextField(max_length=10, allow_null=True),
     })])
     areas = CleaningJsonField(blank=True, validators=[DictListValidator({
         'start_time': TimestampField(),
@@ -260,6 +264,8 @@ class Permit(TimestampedModelMixin, models.Model):
                 registration_number=subject["registration_number"],
                 start_time=subject["start_time"],
                 end_time=subject["end_time"],
+                address=subject["address"],
+                zip=subject["zip"]
             )
             for subject in self.subjects
         ]
@@ -329,6 +335,8 @@ class PermitSubjectItem(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     registration_number = models.CharField(max_length=20)
+    address = models.CharField(max_length=50, null=True)
+    zip = models.CharField(max_length=10, null=True)
 
     objects = PermitSubjectItemQuerySet.as_manager()
 

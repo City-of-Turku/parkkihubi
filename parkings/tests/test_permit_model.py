@@ -113,6 +113,8 @@ def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date():
             'registration_number': 'ABC-123',
             'start_time': '2019-05-01T12:00:00+00:00',
             'end_time': '2019-05-01T11:55:00+00:00',
+            'address': None,
+            'zip': None,
         }],
         'areas': [{
             'start_time': '2019-05-01T12:00:00+00:00',
