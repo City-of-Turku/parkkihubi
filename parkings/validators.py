@@ -36,6 +36,29 @@ class TextField(Field):
 
 
 @deconstructible
+class NullableTextField(Field):
+    def __init__(self, *, max_length, allow_null):
+        assert isinstance(max_length, int)
+        self.max_length = max_length
+        self.allow_null = allow_null
+
+    def clean_value(self, value):
+        if value is None or value == '':
+            if self.allow_null:
+                return None
+            raise ValidationError(_('Not a string'))
+
+        if not isinstance(value, str):
+            raise ValidationError(_('Not a string'))
+
+        if len(value) > self.max_length:
+            raise ValidationError(_(
+                'Value longer than {} characters'.format(self.max_length)))
+
+        return value
+
+
+@deconstructible
 class TimestampField(TextField):
     def __init__(self, *, max_length=None):
         super().__init__(max_length=(max_length or 100))

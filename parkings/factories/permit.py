@@ -31,6 +31,8 @@ def generate_subjects(count=1):
             'registration_number': generate_registration_number(),
             'start_time': generate_timestamp_string('-2h', '-1h'),
             'end_time': generate_timestamp_string('+1h', '+2h'),
+            'address': fake.street_address(),
+            'zip': fake.postcode(),
         })
     return subjects
 
@@ -86,6 +88,7 @@ def create_permit_series(active=False, owner=None):
     return PermitSeries.objects.create(
         active=active,
         owner=owner or UserFactory(),
+        type='STAFF'
     )
 
 

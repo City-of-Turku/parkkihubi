@@ -255,12 +255,15 @@ strategy:
     id: null
     modified_at: null
     owner_id: null
+    type: null
   parkings_permitsubjectitem:
     end_time: null
     id: null
     permit_id: null
     registration_number: parkkihubi.registration_number
     start_time: null
+    address: null
+    zip: null
   parkings_region:
     capacity_estimate: null
     created_at: null
@@ -279,3 +282,14 @@ strategy:
     proj4text: null
     srid: null
     srtext: null
+  parkings_permitcheck:
+    allowed: null
+    created_at: null
+    found_permit_id: null
+    id: null
+    location: null
+    performer_id: null
+    registration_number: parkkihubi.registration_number
+    result: null
+    time: null
+    time_overridden: null

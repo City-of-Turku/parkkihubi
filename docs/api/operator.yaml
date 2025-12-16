@@ -251,6 +251,17 @@ components:
         name:
           description: Name of the payment zone
           type: string
+    PermitTypeCode:
+      description: Specifies which kind of permit is in question
+      type: string
+      enum:
+        - RESIDENT
+        - BUSINESS
+        - CAR_SHARE
+        - HOME_CARE
+        - MOVIE
+        - SPECIAL_MONITORING
+        - STAFF
     PermitSeries:
       type: object
       properties:
@@ -270,6 +281,8 @@ components:
         active:
           description: Specifies whether the series is currently active
           type: boolean
+        type:
+          $ref: '#/components/schemas/PermitTypeCode'
     Permit:
       type: object
       required:
@@ -324,6 +337,16 @@ components:
             Registration number of vehicle, which is subject to the permit
           type: string
           maxLength: 20
+        address:
+          description: Permit owner's address
+          type: string
+          maxLength: 50
+          nullable: true
+        zip:
+          description: Permit owner's zip code
+          type: string
+          maxLength: 10
+          nullable: true
     PermitAreas:
       description: >-
         List of permit area codes with validity time ranges
@@ -893,6 +916,9 @@ paths:
         The time limit which defines which series are considered
         for removal is 3 days by default, but may be configured by the
         service administrator to a different value.
+        
+        Series *type* is not a required value, but if the value is given,
+        it should be one of the applicable types.
       operationId: createPermitSeries
       security: [{ApiKey: []}]
       requestBody:
@@ -902,6 +928,9 @@ paths:
           application/json:
             schema:
               type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/PermitTypeCode'
       responses:
         '201':
           description: Permit series was created successfully
@@ -1062,6 +1091,7 @@ paths:
               required:
                 - series
                 - domain
+                - external_id
                 - subjects
                 - areas
       responses:

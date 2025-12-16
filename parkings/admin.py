@@ -2,13 +2,17 @@ from django import forms
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import models
+from django.db.models import Count
+from django.http import JsonResponse
+from django.urls import path
 
-from .admin_utils import ReadOnlyAdmin, WithAreaField
+from .admin_utils import ReadOnlyAdmin, WithAreaField, export_as_csv
 from .models import (
     ArchivedParking, DataUser, EnforcementDomain, Enforcer, EventArea,
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
     ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
-    PermitLookupItem, PermitSeries, Region)
+    PermitCheck, PermitLookupItem, PermitSeries, Region)
+from .models.constants import PERMIT_TYPES
 
 
 @admin.register(Enforcer)
@@ -53,10 +57,12 @@ class ParkingAdmin(OSMGeoAdmin):
         'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'domain', 'zone', 'time_start', 'time_end']
+    list_filter = ['operator', 'domain', 'zone', 'time_start', 'time_end', 'terminal_number', 'parking_area']
     ordering = ('-time_start',)
     search_fields = ['registration_number', 'parking_area__origin_id']
     exclude = ['location_gk25fin']
+    actions = [export_as_csv]
+    exclude_csv_fields = ['registration_number', 'normalized_reg_num']
 
 
 @admin.register(Region)
@@ -124,10 +130,12 @@ class EventParkingAdmin(OSMGeoAdmin):
         'id', 'operator', 'domain', 'event_area',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'domain', 'event_area']
+    list_filter = ['operator', 'domain', 'event_area', 'time_start', 'time_end']
     ordering = ('-time_start',)
     search_fields = ['registration_number']
     exclude = ['location_gk25fin']
+    actions = [export_as_csv]
+    exclude_csv_fields = ['registration_number', 'normalized_reg_num']
 
 
 @admin.register(EventAreaStatistics)
@@ -161,6 +169,8 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
         'allowed', 'result', 'performer', 'created_at',
         'found_parking', 'found_event_parking'
     ]
+    list_filter = ['time']
+    actions = [export_as_csv]
 
     modifiable = False
 
@@ -189,8 +199,14 @@ class PermitAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'domain', 'series', 'external_id',
         'item_count', 'created_at', 'modified_at']
-    list_filter = ['series__active', 'domain', 'series__owner']
+    list_filter = ['series__active', 'domain', 'series__owner', 'series__type']
     ordering = ('-series', '-id')
+    search_fields = ['id', 'subject_items__address', 'subject_items__zip']
+    search_help_text = (
+        "Search by ZIP (exact) or address (contains). "
+        "Combine terms with spaces or commas.")
+    actions = [export_as_csv]
+    exclude_csv_fields = ['subjects']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -236,8 +252,10 @@ class PermitSeriesAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'active', 'owner', 'permit_count',
         'created_at', 'modified_at']
-    list_filter = ['active', 'owner']
+    list_filter = ['active', 'owner', 'type']
     ordering = ('-created_at', '-id')
+
+    change_list_template = 'admin/parkings/permitseries/change_list.html'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -245,3 +263,56 @@ class PermitSeriesAdmin(admin.ModelAdmin):
 
     def permit_count(self, instance):
         return instance.permit_count
+
+    def get_urls(self):
+        urls = super().get_urls()
+        return [
+            path(
+                'stats-json/',
+                self.admin_site.admin_view(self.stats_json_view),
+                name='parkings-permitseries-stats-json',
+            ),
+        ] + urls
+
+    def stats_json_view(self, request):
+        """
+        Returns JSON: [{code, label, count}] for active=True grouped by type.
+        """
+        qs = (
+            PermitSeries.objects
+            .filter(active=True)
+            .values('type')
+            .annotate(count=Count('id'))
+        )
+        counts_by_code = {row['type']: row['count'] for row in qs}
+
+        data = [
+            {'code': code, 'label': label, 'count': counts_by_code.get(code, 0)}
+            for code, label in PERMIT_TYPES
+        ]
+        return JsonResponse({'data': data})
+
+
+@admin.register(PermitCheck)
+class PermitCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+    list_display = [
+        'id', 'time', 'registration_number', 'location',
+        'allowed', 'result', 'performer', 'created_at',
+        'found_permit'
+    ]
+    list_filter = ['time']
+    actions = [export_as_csv]
+
+    modifiable = False
+
+    def get_readonly_fields(self, request, obj=None):
+        # Remove location from readonly fields, because otherwise the
+        # map won't be rendered at all.  The class level
+        # "modifiable=False" will take care of not allowing the location
+        # to be modified.
+        fields = super().get_readonly_fields(request, obj)
+        return [x for x in fields if x != 'location']
+
+    def has_change_permission(self, request, obj=None):
+        # Needed to make the map visible for the location field
+        return True
