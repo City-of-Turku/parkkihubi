@@ -226,16 +226,6 @@ Three possible ways (out of many) to generate the documentation:
           -i operator.yaml -l html2 -c config.json \
           -o /output/path/operator/
 
-### Generating test parkings for development
-
-Create dated test rows (plus a few ongoing ones) to exercise `archive_parkings`:
-
-    python manage.py generate_test_parkings --per-bucket 15 --bucket-days "0,7,30,60,90,120" --open-count 5 --duration-hours 1.5
-
-Then see what would be archived for a given window:
-
-    python manage.py archive_parkings --keep-days 30 --dry-run -v 2
-
 ## License
 
 [MIT](https://tldrlegal.com/license/mit-license)
