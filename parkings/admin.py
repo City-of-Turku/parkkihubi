@@ -6,7 +6,7 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django.urls import path
 
-from .admin_utils import ReadOnlyAdmin, WithAreaField
+from .admin_utils import ReadOnlyAdmin, WithAreaField, export_as_csv
 from .models import (
     ArchivedParking, DataUser, EnforcementDomain, Enforcer, EventArea,
     EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
@@ -57,10 +57,12 @@ class ParkingAdmin(OSMGeoAdmin):
         'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'domain', 'zone', 'time_start', 'time_end']
+    list_filter = ['operator', 'domain', 'zone', 'time_start', 'time_end', 'terminal_number', 'parking_area']
     ordering = ('-time_start',)
     search_fields = ['registration_number', 'parking_area__origin_id']
     exclude = ['location_gk25fin']
+    actions = [export_as_csv]
+    exclude_csv_fields = ['registration_number', 'normalized_reg_num']
 
 
 @admin.register(Region)
@@ -128,10 +130,12 @@ class EventParkingAdmin(OSMGeoAdmin):
         'id', 'operator', 'domain', 'event_area',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'domain', 'event_area']
+    list_filter = ['operator', 'domain', 'event_area', 'time_start', 'time_end']
     ordering = ('-time_start',)
     search_fields = ['registration_number']
     exclude = ['location_gk25fin']
+    actions = [export_as_csv]
+    exclude_csv_fields = ['registration_number', 'normalized_reg_num']
 
 
 @admin.register(EventAreaStatistics)
@@ -165,6 +169,8 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
         'allowed', 'result', 'performer', 'created_at',
         'found_parking', 'found_event_parking'
     ]
+    list_filter = ['time']
+    actions = [export_as_csv]
 
     modifiable = False
 
