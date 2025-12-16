@@ -205,6 +205,8 @@ class PermitAdmin(admin.ModelAdmin):
     search_help_text = (
         "Search by ZIP (exact) or address (contains). "
         "Combine terms with spaces or commas.")
+    actions = [export_as_csv]
+    exclude_csv_fields = ['subjects']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -298,6 +300,8 @@ class PermitCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
         'allowed', 'result', 'performer', 'created_at',
         'found_permit'
     ]
+    list_filter = ['time']
+    actions = [export_as_csv]
 
     modifiable = False
 
