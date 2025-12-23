@@ -34,4 +34,3 @@ class ArchivedParkingAnonymizedViewSet(mixins.ListModelMixin, viewsets.GenericVi
     permission_classes = [IsDataUser]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ArchivedParkingAnonymizedFilterSet
-

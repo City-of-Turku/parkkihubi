@@ -1,10 +1,10 @@
 from rest_framework.routers import DefaultRouter
 
 from ..url_utils import versioned_url
+from .archived_parking_anonymized import ArchivedParkingAnonymizedViewSet
 from .event_parking_anonymized import EventParkingAnonymizedViewSet
 from .parking_anonymized import ParkingAnonymizedViewSet
 from .parking_check_anonymized import ParkingCheckAnonymizedViewSet
-from .archived_parking_anonymized import ArchivedParkingAnonymizedViewSet
 
 router = DefaultRouter()
 

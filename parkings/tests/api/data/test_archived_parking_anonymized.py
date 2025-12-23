@@ -79,4 +79,3 @@ def test_paginator(data_user_api_client, archived_parking_factory):
     data = get(data_user_api_client, list_url + "?page=2&page_size=2")
     assert data['next'] is not None
     assert data['previous'] is not None
-
