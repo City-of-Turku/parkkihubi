@@ -4,8 +4,6 @@ from datetime import datetime, timedelta
 import pytest
 from django.urls import reverse
 
-from parkings.pagination import DataPagination
-
 from ..utils import (
     check_list_endpoint_base_fields, check_method_status_codes, get)
 
@@ -66,7 +64,7 @@ def test_filter_archived_at(api_client, archived_parking):
 
 
 def test_paginator(api_client, archived_parking_factory):
-    page_size = min(DataPagination.page_size, 5)
+    page_size = 5
     archived_parking_factory.create_batch(page_size)
     data = get(api_client, list_url + f"?page_size={page_size}")
     assert data['count'] == page_size
