@@ -24,7 +24,16 @@ assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
 #####################
 env = Env(
     ALLOWED_HOSTS=(list, []),
-    CSRF_TRUSTED_ORIGINS=(list, [])
+    CSRF_TRUSTED_ORIGINS=(list, []),
+    # Authentication settings
+    OIDC_API_AUDIENCE=(list, []),
+    OIDC_API_SCOPE_PREFIX=(str, ''),
+    OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION=(bool, True),
+    OIDC_API_ISSUER=(str, ''),
+    OIDC_API_AUTHORIZATION_FIELD=(str, ''),
+    SOCIAL_AUTH_TUNNISTAMO_KEY=(str, ''),
+    SOCIAL_AUTH_TUNNISTAMO_SECRET=(str, ''),
+    SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT=(str, ''),
 )
 env_file = os.path.join(BASE_DIR, '.env')
 if os.path.exists(env_file):
@@ -69,7 +78,10 @@ CACHES = {'default': env.cache_url(default='locmemcache://')}
 # Installed apps #
 ##################
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'helusers.apps.HelusersConfig',  # Helusers app (provides models)
+    # Note: helusers.providers.helsinki_oidc is not required - Tunnistamo works for any city
+    'social_django',  # Required for OAuth/OIDC authentication
+    'helusers.apps.HelusersAdminConfig',  # Replaces django.contrib.admin with Tunnistamo support
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -107,6 +119,29 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 ]
+
+#######################
+# Authentication      #
+#######################
+AUTHENTICATION_BACKENDS = (
+    'helusers.tunnistamo_oidc.TunnistamoOIDCAuth',
+    'django.contrib.auth.backends.ModelBackend',  # Keep for password login fallback
+)
+
+# Session serializer required for helusers (stores datetime objects)
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+# Helusers OIDC API Token Auth settings (required by helusers)
+OIDC_API_TOKEN_AUTH = {
+    'AUDIENCE': env('OIDC_API_AUDIENCE'),
+    'API_SCOPE_PREFIX': env('OIDC_API_SCOPE_PREFIX'),
+    'API_AUTHORIZATION_FIELD': env('OIDC_API_AUTHORIZATION_FIELD'),
+    'REQUIRE_API_SCOPE_FOR_AUTHENTICATION': env('OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION'),
+    'ISSUER': env('OIDC_API_ISSUER'),
+}
+
+# Logout redirect URL (required by helusers for social auth logout)
+LOGOUT_REDIRECT_URL = '/admin/'
 
 #############
 # Templates #
@@ -173,6 +208,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'parkings.authentication.ApiKeyAuthentication',
         'drf_jwt_2fa.authentication.Jwt2faAuthentication',
+        'helusers.tunnistamo_oidc.TunnistamoOIDCAuth',
     ] + ([  # Following two are only for DEBUG mode in dev environment:
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
@@ -223,7 +259,7 @@ PARKKIHUBI_ENFORCEMENT_API_ENABLED = (
 PARKKIHUBI_DATA_API_ENABLED = env.bool('PARKKIHUBI_DATA_API_ENABLED', True)
 
 PARKKIHUBI_PERMITS_PRUNABLE_AFTER = timedelta(days=3)
-DEFAULT_ENFORCEMENT_DOMAIN = ('Helsinki', 'HKI')
+DEFAULT_ENFORCEMENT_DOMAIN = ('Turku', 'TKU')  # Changed from ('Helsinki', 'HKI')
 PARKKIHUBI_REGISTRATION_NUMBERS_REMOVABLE_AFTER = timedelta(hours=24)
 
 LOGGING = {
@@ -258,3 +294,7 @@ LOGGING = {
 }
 
 FILE_UPLOAD_PERMISSIONS = 0o644
+
+SOCIAL_AUTH_TUNNISTAMO_KEY = env('SOCIAL_AUTH_TUNNISTAMO_KEY')
+SOCIAL_AUTH_TUNNISTAMO_SECRET = env('SOCIAL_AUTH_TUNNISTAMO_SECRET')
+SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT = env('SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT')
