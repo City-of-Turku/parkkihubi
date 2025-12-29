@@ -30,4 +30,6 @@ if getattr(settings, 'PARKKIHUBI_DATA_API_ENABLED', False):
 
 urlpatterns.extend([
     re_path(r'^admin/', admin.site.urls),
+    re_path(r'', include('social_django.urls', namespace='social')),
+    re_path(r'', include('helusers.urls')),
 ])
