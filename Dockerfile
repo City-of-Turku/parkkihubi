@@ -67,7 +67,14 @@ RUN chmod a+x ./manage.py
 EXPOSE 8000 2222
 
 RUN python3.10 -m venv --system-site-packages /home/bew/.venv
-RUN pip3 install -r ./requirements.txt
+# Install PyJWT 2.10.1 first (required by social-auth-core, conflicts with djangorestframework-jwt)
+RUN pip3 install "PyJWT[crypto]==2.10.1"
+# Create temporary requirements file without djangorestframework-jwt to avoid PyJWT conflict
+RUN grep -v "djangorestframework-jwt" ./requirements.txt > /tmp/requirements_no_jwt.txt
+# Install requirements without djangorestframework-jwt
+RUN pip3 install -r /tmp/requirements_no_jwt.txt
+# Install djangorestframework-jwt with --no-deps to use already-installed PyJWT 2.10.1
+RUN pip3 install djangorestframework-jwt==1.11.0 --no-deps
 RUN pip3 install -r ./requirements-dev.txt
 RUN pip3 install -r ./requirements-test.txt
 RUN pip3 install -r ./requirements-style.txt

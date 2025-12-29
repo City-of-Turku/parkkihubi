@@ -53,8 +53,6 @@ owslib==0.25.0
     # via -r requirements.in
 psycopg2==2.9.2
     # via -r requirements.in
-pyjwt==1.7.1
-    # via djangorestframework-jwt
 pyproj==3.3.0
     # via
     #   -r requirements.in
@@ -79,10 +77,12 @@ redis==5.0.7
     # via
     #   -r requirements.in
     #   django-redis
-requests==2.25.1
+requests==2.32.5
     # via
     #   -r requirements.in
+    #   django-helusers
     #   owslib
+    #   social-auth-core
 six==1.16.0
     # via
     #   database-sanitizer
@@ -97,3 +97,35 @@ tzdata==2023.3
     # via -r requirements.in
 urllib3==1.25.10
     # via requests
+cachetools==6.2.4
+    # via django-helusers
+charset-normalizer==3.4.4
+    # via requests
+defusedxml==0.7.1
+    # via social-auth-core
+deprecation==2.1.0
+    # via django-helusers
+django-helusers==0.14.4
+    # via -r requirements.in
+ecdsa==0.19.1
+    # via python-jose
+oauthlib==3.3.1
+    # via social-auth-core
+    # via requests-oauthlib
+pyasn1==0.6.1
+    # via python-jose
+# PyJWT==2.10.1 - Installed separately in Dockerfile due to version conflict
+# Note: djangorestframework-jwt requires <2.0.0, but social-auth-core requires >=2.10.1
+# PyJWT 2.10.1 is installed first, then requirements.txt is installed
+python-jose==3.5.0
+    # via django-helusers
+python3-openid==3.2.0
+    # via social-auth-core
+requests-oauthlib==2.0.0
+    # via social-auth-core
+rsa==4.9.1
+    # via python-jose
+social-auth-app-django==5.0.0
+    # via -r requirements.in
+social-auth-core==4.8.3
+    # via social-auth-app-django
