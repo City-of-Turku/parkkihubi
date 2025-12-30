@@ -323,7 +323,7 @@ def test_default_enforcement_domain_is_used_on_event_parking_creation_if_not_spe
 def test_enforcement_domain_can_be_specified_on_parking_creation(operator_api_client,
                                                                  new_event_parking_data,
                                                                  event_area):
-    enforcement_domain = EnforcementDomain.objects.create(code='TKU', name='Turku')
+    enforcement_domain = EnforcementDomain.objects.create(code='RAI', name='Raisio')
     event_area.domain = enforcement_domain
     event_area.save()
     new_event_parking_data.update(domain=enforcement_domain.code)
