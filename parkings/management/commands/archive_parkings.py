@@ -8,7 +8,7 @@ from parkings.models import ArchivedParking, Parking
 
 
 class Command(BaseCommand):
-    help = "Archive Parkings older than given number of months."
+    help = "Archive Parkings older than given number of days."
 
     verbosity = 1
 
@@ -24,14 +24,14 @@ class Command(BaseCommand):
             ),
         )
         parser.add_argument(
-            "--keep-months",
+            "--keep-days",
             "-m",
             type=int,
             required=True,
             metavar="N",
             help=(
-                "Number of months to keep untouched. This will archive "
-                "all parkings that are older than N months."
+                "Number of days to keep untouched. This will archive "
+                "all parkings that are older than N days."
             ),
         )
         parser.add_argument(
@@ -51,7 +51,7 @@ class Command(BaseCommand):
     def handle(
         self,
         limit=None,
-        keep_months=None,
+        keep_days=None,
         batch_size=50000,
         dry_run=False,
         verbosity=1,
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         self.verbosity = verbosity
 
         all_parkings = Parking.objects.order_by("time_end", "pk")
-        end_time = timezone.now() - relativedelta(months=keep_months)
+        end_time = timezone.now() - relativedelta(days=keep_days)
         to_archive = all_parkings.ends_before(end_time)
 
         total_count = to_archive.count()
