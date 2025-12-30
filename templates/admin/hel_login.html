@@ -14,7 +14,17 @@
 <div id="helsinki-login"{% if grappelli_installed %} class="helusers-hide"{% endif %}>
     <p>Kirjaudu sisään Turun kaupungin työntekijän tunnuksella:</p>
     <div id="top-bottom-margins">
-        <a href="{{ helsinki_login_url }}{% if redirect_path %}?next={{ redirect_path }}{% endif %}">
+        {# Use helsinki_login_url if it's valid (not empty, not /admin/login, and not /login/) #}
+        {# Otherwise use fallback to construct Tunnistamo OAuth URL #}
+        {% if helsinki_login_url and helsinki_login_url != '' and helsinki_login_url != '/admin/login' and helsinki_login_url != '/login/' and '/admin/login' not in helsinki_login_url and helsinki_login_url|slice:":7" != '/login/' %}
+            {# helusers provided a valid login URL #}
+            <a href="{{ helsinki_login_url }}{% if redirect_path %}?next={{ redirect_path|urlencode }}{% endif %}">
+        {% else %}
+            {# Fallback: use social_django URL pattern directly #}
+            {# social_django URLs are at /login/<provider>/ #}
+            {# The provider name for Tunnistamo with helusers is typically 'tunnistamo' #}
+            <a href="/login/tunnistamo/{% if redirect_path %}?next={{ redirect_path|urlencode }}{% endif %}">
+        {% endif %}
             <button id="helsinki-login-btn" class="button grp-button grp-default" type="button">Turku Login</button>
         </a>
     </div>
