@@ -14,6 +14,17 @@ from .models import (
     PermitCheck, PermitLookupItem, PermitSeries, Region)
 from .models.constants import PERMIT_TYPES
 
+# Unregister helusers AD group models from admin to hide "Helsinki Users" section
+# These models are auto-registered by helusers, but we don't need them in admin
+try:
+    from helusers.models import ADGroupMapping, ADGroup
+    if admin.site.is_registered(ADGroupMapping):
+        admin.site.unregister(ADGroupMapping)
+    if admin.site.is_registered(ADGroup):
+        admin.site.unregister(ADGroup)
+except (ImportError, AttributeError):
+    pass
+
 
 @admin.register(Enforcer)
 class EnforcerAdmin(WithAreaField, OSMGeoAdmin):
