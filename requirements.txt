@@ -23,7 +23,6 @@ django==4.2.26
     #   django-filter
     #   django-redis
     #   djangorestframework
-    #   drf-jwt-2fa
 django-cors-headers==3.5.0
     # via -r requirements.in
 django-environ==0.5.0
@@ -38,12 +37,7 @@ djangorestframework==3.14.0
     # via
     #   -r requirements.in
     #   djangorestframework-gis
-    #   drf-jwt-2fa
 djangorestframework-gis==0.15
-    # via -r requirements.in
-djangorestframework-jwt==1.11.0
-    # via drf-jwt-2fa
-drf-jwt-2fa==0.3.0
     # via -r requirements.in
 idna==2.10
     # via requests
@@ -114,9 +108,8 @@ oauthlib==3.3.1
     # via requests-oauthlib
 pyasn1==0.6.1
     # via python-jose
-# PyJWT==2.10.1 - Installed separately in Dockerfile due to version conflict
-# Note: djangorestframework-jwt requires <2.0.0, but social-auth-core requires >=2.10.1
-# PyJWT 2.10.1 is installed first, then requirements.txt is installed
+# PyJWT==2.10.1 - Installed separately in Dockerfile
+# Required by social-auth-core (>=2.10.1)
 python-jose==3.5.0
     # via django-helusers
 python3-openid==3.2.0
