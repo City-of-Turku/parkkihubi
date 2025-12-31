@@ -44,6 +44,16 @@ param apiReplicaUrl string
 // Application specific parameters
 @secure()
 param secretKey string = ''
+@secure()
+param socialAuthTunnistamoKey string = ''
+@secure()
+param socialAuthTunnistamoSecret string = ''
+param socialAuthTunnistamoOidcEndpoint string = ''
+param oidcApiAudience string = ''
+param oidcApiScopePrefix string = ''
+param oidcApiIssuer string = ''
+param oidcApiAuthorizationField string = ''
+param oidcApiRequireScopeForAuthentication bool = true
 
 param apiAppSettings object = {
   USE_X_FORWARDED_HOST: true
@@ -82,6 +92,14 @@ var webAppRequirements = [
       CSRF_TRUSTED_ORIGINS: apiUrl
       DATABASE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::dbUrlSecret.name})'
       CACHE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::cacheUrlSecret.name})'
+      SOCIAL_AUTH_TUNNISTAMO_KEY: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoKeySecret.name})'
+      SOCIAL_AUTH_TUNNISTAMO_SECRET: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoSecretSecret.name})'
+      SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: socialAuthTunnistamoOidcEndpoint
+      OIDC_API_AUDIENCE: oidcApiAudience
+      OIDC_API_SCOPE_PREFIX: oidcApiScopePrefix
+      OIDC_API_ISSUER: oidcApiIssuer
+      OIDC_API_AUTHORIZATION_FIELD: oidcApiAuthorizationField
+      OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: string(oidcApiRequireScopeForAuthentication)
       ...apiAppSettings
     }
     fileshares: {
@@ -98,6 +116,14 @@ var webAppRequirements = [
       CSRF_TRUSTED_ORIGINS: apiReplicaUrl
       DATABASE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::dbReplicaUrlSecret.name})'
       CACHE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::cacheReplicaUrlSecret.name})'
+      SOCIAL_AUTH_TUNNISTAMO_KEY: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoKeySecret.name})'
+      SOCIAL_AUTH_TUNNISTAMO_SECRET: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoSecretSecret.name})'
+      SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: socialAuthTunnistamoOidcEndpoint
+      OIDC_API_AUDIENCE: oidcApiAudience
+      OIDC_API_SCOPE_PREFIX: oidcApiScopePrefix
+      OIDC_API_ISSUER: oidcApiIssuer
+      OIDC_API_AUTHORIZATION_FIELD: oidcApiAuthorizationField
+      OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: string(oidcApiRequireScopeForAuthentication)
       ...apiAppSettings
     }
     fileshares: {
@@ -782,6 +808,20 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     name: 'cacheReplicaUrl'
     properties: {
       value: 'rediss://:${cache.listKeys().primaryKey}@${cacheName}.redis.cache.windows.net:6380/1'
+    }
+  }
+
+  resource socialAuthTunnistamoKeySecret 'secrets' = {
+    name: 'socialAuthTunnistamoKey'
+    properties: {
+      value: socialAuthTunnistamoKey
+    }
+  }
+
+  resource socialAuthTunnistamoSecretSecret 'secrets' = {
+    name: 'socialAuthTunnistamoSecret'
+    properties: {
+      value: socialAuthTunnistamoSecret
     }
   }
 }

@@ -293,3 +293,51 @@ strategy:
     result: null
     time: null
     time_overridden: null
+  helusers_adgroup:
+    id: null
+    display_name: string.empty
+    name: string.empty
+  helusers_adgroupmapping:
+    id: null
+    ad_group_id: null
+    group_id: null
+  helusers_oidcbackchannellogoutevent:
+    id: null
+    created_at: null
+    sid: string.random
+    iss: string.empty
+    sub: string.random
+  social_auth_usersocialauth:
+    id: null
+    provider: string.empty
+    extra_data: string.empty
+    user_id: null
+    uid: string.random
+    created: null
+    modified: null
+  social_auth_nonce:
+    id: null
+    timestamp: null
+    server_url: string.empty
+    salt: string.random
+  social_auth_association:
+    id: null
+    issued: null
+    server_url: string.empty
+    secret: string.random
+    assoc_type: string.empty
+    lifetime: null
+    handle: string.random
+  social_auth_code:
+    id: null
+    code: string.random
+    verified: null
+    timestamp: null
+    email: user.email
+  social_auth_partial:
+    id: null
+    data: string.empty
+    backend: string.empty
+    next_step: null
+    token: string.random
+    timestamp: null
