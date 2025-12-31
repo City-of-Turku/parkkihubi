@@ -1,5 +1,7 @@
-from django.shortcuts import redirect
+from urllib.parse import urlparse
+
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -49,55 +51,70 @@ def dashboard_login(request):
     return redirect('/admin/login/')
 
 
+def _get_next_from_query(request):
+    """Get next URL from query string."""
+    return request.GET.get('next')
+
+
+def _get_next_from_session(request):
+    """Get next URL from session and clear it."""
+    next_url = request.session.get('dashboard_next')
+    if next_url:
+        del request.session['dashboard_next']
+        request.session.modified = True
+    return next_url
+
+
+def _get_next_from_dashboard_flag(request):
+    """Get next URL from dashboard login flag."""
+    if request.session.get('dashboard_login'):
+        del request.session['dashboard_login']
+        request.session.modified = True
+        return '/dashboard/'
+    return None
+
+
+def _get_next_from_social_django(request):
+    """Get next URL from social_django session data."""
+    next_url = request.session.get('next') or request.session.get('social_auth_next')
+    if next_url and 'next' in request.session:
+        del request.session['next']
+        request.session.modified = True
+    return next_url
+
+
+def _get_next_from_referer(request):
+    """Get next URL from HTTP referer if it contains dashboard path."""
+    referer = request.META.get('HTTP_REFERER')
+    if referer and '/dashboard' in referer:
+        parsed = urlparse(referer)
+        if '/dashboard' in parsed.path:
+            return parsed.path
+    return None
+
+
+def _get_default_next(request):
+    """Get default next URL based on referer."""
+    referer = request.META.get('HTTP_REFERER', '')
+    if '/admin/login' in referer:
+        return '/admin/'
+    return '/dashboard/'
+
+
 @login_required
 def login_redirect(request):
     """
     Redirect after successful login.
     Checks for 'next' parameter in query string, session, or social_django session data.
     """
-    # Check for 'next' in query string first (from OAuth callback)
-    next_url = request.GET.get('next')
-
-    # Check our custom session key for dashboard redirects
-    if not next_url:
-        next_url = request.session.get('dashboard_next')
-        if next_url:
-            # Clear it from session after use
-            del request.session['dashboard_next']
-            request.session.modified = True
-
-    # Check if user came from dashboard login (without explicit next parameter)
-    if not next_url and request.session.get('dashboard_login'):
-        next_url = '/dashboard/'
-        # Clear the flag after use
-        del request.session['dashboard_login']
-        request.session.modified = True
-
-    # If not in query string, check social_django's session data
-    # social_django stores the next URL in session with key 'next'
-    if not next_url:
-        # Check various possible session keys that social_django might use
-        next_url = request.session.get('next') or request.session.get('social_auth_next')
-        if next_url and 'next' in request.session:
-            del request.session['next']
-            request.session.modified = True
-
-    # If still no next URL, check referer for dashboard path
-    if not next_url and request.META.get('HTTP_REFERER'):
-        referer = request.META['HTTP_REFERER']
-        if '/dashboard' in referer:
-            from urllib.parse import urlparse
-            parsed = urlparse(referer)
-            if '/dashboard' in parsed.path:
-                next_url = parsed.path
-
-    # Default to dashboard if no next URL found (most common case for dashboard users)
-    # Only default to admin if explicitly coming from admin login
-    if not next_url:
-        if request.META.get('HTTP_REFERER') and '/admin/login' in request.META.get('HTTP_REFERER', ''):
-            next_url = '/admin/'
-        else:
-            next_url = '/dashboard/'
+    # Try different sources in order of priority
+    next_url = (
+        _get_next_from_query(request) or
+        _get_next_from_session(request) or
+        _get_next_from_dashboard_flag(request) or
+        _get_next_from_social_django(request) or
+        _get_next_from_referer(request) or
+        _get_default_next(request)
+    )
 
     return redirect(next_url)
-

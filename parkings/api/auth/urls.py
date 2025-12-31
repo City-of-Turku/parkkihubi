@@ -1,5 +1,7 @@
 from django.urls import re_path
+
 from parkings.api.auth import views
+
 from ..url_utils import versioned_url
 
 app_name = 'auth'
