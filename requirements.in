@@ -14,7 +14,6 @@ psycopg2==2.9.2   # Version from Ubuntu 22.04
 djangorestframework>=3.9
 djangorestframework-gis>=0.14
 django-filter>=2.1.0
-drf-jwt-2fa
 
 # Tunnistamo authentication
 django-helusers
