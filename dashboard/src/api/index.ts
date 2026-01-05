@@ -13,10 +13,9 @@ interface ErrorHandler {
 }
 
 export class Api {
+    public baseUrl: string | undefined;
     public endpoints = {
-        authCodeToken: '/auth/v1/get-code/',
-        authAuthToken: '/auth/v1/auth/',
-        authRefresh: '/auth/v1/refresh/',
+        authCheck: '/auth/v1/check/',
         regions: '/monitoring/v1/region/',
         regionStats: '/monitoring/v1/region_statistics/',
         validParkings: '/monitoring/v1/valid_parking/',
@@ -27,11 +26,16 @@ export class Api {
     private axios: axios.AxiosInstance;
 
     constructor(baseUrl?: string) {
-        this.axios = axios.default.create({baseURL: baseUrl});
+        this.baseUrl = baseUrl;
+        this.axios = axios.default.create({
+            baseURL: baseUrl,
+            withCredentials: true, // Required for session-based authentication
+        });
         this.auth = new AuthManager(this, this.axios);
     }
 
     setBaseUrl(baseUrl: string) {
+        this.baseUrl = baseUrl;
         this.axios.defaults.baseURL = baseUrl;
     }
 
@@ -67,7 +71,7 @@ export class Api {
         callback: SuccessCallback<RegionList> | SuccessCallback<ParkingList> | SuccessCallback<RegionStatsList>,
         errorHandler: ErrorHandler
     ) {
-        this.axios.get(url)
+        this.axios.get(url, { withCredentials: true })
             .then((response) => {
                 callback(response);
                 const nextUrl = response.data.next;

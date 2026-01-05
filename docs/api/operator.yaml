@@ -10,9 +10,9 @@ servers:
   - url: http://localhost:8000/operator/v1/
     description: Local development server
 tags:
-  - name: Enforcement Domains
-    description: >-
-      Endpoint for listing the available enforcement domains
+#  - name: Enforcement Domains
+#    description: >-
+#      Endpoint for listing the available enforcement domains
   - name: Payment Zones
     description: >-
       Endpoint for listing the available payment zones
@@ -49,9 +49,10 @@ components:
   schemas:
     EnforcementDomain:
       type: object
+      enum: ["TKU"]
       example:
-        code: "HKI"
-        name: "Helsingin kaupunki"
+        code: "TKU"
+        name: "Turun kaupunki"
       properties:
         code:
           description: Code of the enforcement domain
@@ -76,7 +77,7 @@ components:
         registration_number: LOL-007
         time_start: "2016-12-24T21:00:00Z"
         time_end: "2016-12-24T22:00:00Z"
-        domain: "HKI"
+        domain: "TKU"
         zone: "2"
       properties:
         id:
@@ -124,6 +125,7 @@ components:
             Code of the enforcement domain that is allowed
             to see the parking.
           type: string
+          enum: ["TKU"]
         zone: &parkingZone
           description: Payment zone code
           oneOf: [{type: integer}, {type: string}]
@@ -198,6 +200,7 @@ components:
             Code of the enforcement domain that is allowed
             to see the event parking.
           type: string
+          enum: ["TKU"]
         event_area_id: &eventParkingEventAreaID
           description: The ID of the event area the event parking is assigned to
           type: string
@@ -232,7 +235,7 @@ components:
     PaymentZone:
       type: object
       example:
-        domain: "HKI"
+        domain: "TKU"
         code: "2"
         name: "Maksuvyöhyke 2"
       required:
@@ -244,6 +247,7 @@ components:
           description: Enforcement domain code of the payment zone
           type: string
           maxLength: 10
+          enum: ["TKU"]
         code:
           description: Code of the payment zone
           type: string
@@ -251,6 +255,17 @@ components:
         name:
           description: Name of the payment zone
           type: string
+    PermitTypeCode:
+      description: Specifies which kind of permit is in question
+      type: string
+      enum:
+        - RESIDENT
+        - BUSINESS
+        - CAR_SHARE
+        - HOME_CARE
+        - MOVIE
+        - SPECIAL_MONITORING
+        - STAFF
     PermitSeries:
       type: object
       properties:
@@ -270,6 +285,8 @@ components:
         active:
           description: Specifies whether the series is currently active
           type: boolean
+        type:
+          $ref: '#/components/schemas/PermitTypeCode'
     Permit:
       type: object
       required:
@@ -284,6 +301,7 @@ components:
             Code of the enforcement domain that is allowed
             to see the permit.
           type: string
+          enum: ["TKU"]
         external_id: &permitExternalId
           description: External id of the permit
           type: string
@@ -324,6 +342,16 @@ components:
             Registration number of vehicle, which is subject to the permit
           type: string
           maxLength: 20
+        address:
+          description: Permit owner's address
+          type: string
+          maxLength: 50
+          nullable: true
+        zip:
+          description: Permit owner's zip code
+          type: string
+          maxLength: 10
+          nullable: true
     PermitAreas:
       description: >-
         List of permit area codes with validity time ranges
@@ -356,7 +384,7 @@ components:
     PermitArea:
       type: object
       example:
-        domain: "HKI"
+        domain: "TKU"
         code: "FooBar:123"
         name: "Area 123 of FooBar operator"
       required:
@@ -368,6 +396,7 @@ components:
           description: Enforcement domain code of the permit area
           type: string
           maxLength: 10
+          enum: ["TKU"]
         code:
           description: Code of the permit area
           type: string
@@ -426,24 +455,24 @@ components:
     NotFound:  # 404
       description: Parking not found
 paths:
-  /enforcement_domain/:
-    get:
-      tags: ['Enforcement Domains']
-      summary: Get list of the enforcement domains
-      operationId: getEnforcementDomains
-      security: [{ApiKey: []}]
-      responses:
-        '200':
-          description: An array of enforcement domains
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  << : *paginatedResult
-                  results:
-                    items:
-                      $ref: '#/components/schemas/EnforcementDomain'
+#  /enforcement_domain/:
+#    get:
+#      tags: ['Enforcement Domains']
+#      summary: Get list of the enforcement domains
+#      operationId: getEnforcementDomains
+#      security: [{ApiKey: []}]
+#      responses:
+#        '200':
+#          description: An array of enforcement domains
+#          content:
+#            application/json:
+#              schema:
+#                type: object
+#                properties:
+#                  << : *paginatedResult
+#                  results:
+#                    items:
+#                      $ref: '#/components/schemas/EnforcementDomain'
   /parking/:
     post:
       tags: ['Parkings']
@@ -465,7 +494,7 @@ paths:
                     registration_number: LOL-007
                     time_start: "2016-12-24T21:00:00Z"
                     time_end: "2016-12-24T22:00:00Z"
-                    domain: "HKI"
+                    domain: "TKU"
                     zone: "2"
                   type: object
                   properties:
@@ -509,7 +538,7 @@ paths:
                     registration_number: LOL-007
                     time_start: "2016-12-24T21:00:00Z"
                     is_disc_parking: true
-                    domain: "HKI"
+                    domain: "TKU"
                   type: object
                   properties:
                     location:
@@ -893,6 +922,9 @@ paths:
         The time limit which defines which series are considered
         for removal is 3 days by default, but may be configured by the
         service administrator to a different value.
+        
+        Series *type* is not a required value, but if the value is given,
+        it should be one of the applicable types.
       operationId: createPermitSeries
       security: [{ApiKey: []}]
       requestBody:
@@ -902,6 +934,9 @@ paths:
           application/json:
             schema:
               type: object
+              properties:
+                type:
+                  $ref: '#/components/schemas/PermitTypeCode'
       responses:
         '201':
           description: Permit series was created successfully
@@ -1062,6 +1097,7 @@ paths:
               required:
                 - series
                 - domain
+                - external_id
                 - subjects
                 - areas
       responses:
@@ -1161,22 +1197,23 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-    delete:
-      tags: ['Permits']
-      summary: Delete a permit
-      operationId: deletePermit
-      security: [{ApiKey: []}]
-      parameters:
-        - << : *permitParamId
-      responses:
-        '204':
-          description: The permit was deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+#    Deleting a permit through API is currently not allowed
+#    delete:
+#      tags: ['Permits']
+#      summary: Delete a permit
+#      operationId: deletePermit
+#      security: [{ApiKey: []}]
+#      parameters:
+#        - << : *permitParamId
+#      responses:
+#        '204':
+#          description: The permit was deleted successfully
+#        '401':
+#          $ref: '#/components/responses/Unauthorized'
+#        '403':
+#          $ref: '#/components/responses/Forbidden'
+#        '404':
+#          $ref: '#/components/responses/NotFound'
   /activepermit/:
     get:
       tags: ['Active Permits by External Id']

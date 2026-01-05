@@ -67,6 +67,9 @@ RUN chmod a+x ./manage.py
 EXPOSE 8000 2222
 
 RUN python3.10 -m venv --system-site-packages /home/bew/.venv
+# Install PyJWT 2.10.1 first (required by social-auth-core)
+RUN pip3 install "PyJWT[crypto]==2.10.1"
+# Install requirements (drf-jwt-2fa and djangorestframework-jwt removed - replaced with Tunnistamo)
 RUN pip3 install -r ./requirements.txt
 RUN pip3 install -r ./requirements-dev.txt
 RUN pip3 install -r ./requirements-test.txt

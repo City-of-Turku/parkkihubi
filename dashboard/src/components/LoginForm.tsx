@@ -1,127 +1,38 @@
 import * as React from 'react';
-import {
-  Alert, Button, Form,
-} from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import * as config from '../config';
 
 export interface Props {
-    phase?: 'login' | 'verification-code';
-    loginErrorMessage?: string;
-    verificationCodeErrorMessage?: string;
-    onLogin?: (username: string, password: string) => void;
-    onVerificationCodeSubmitted?: (code: string) => void;
+    // No longer needed - using Tunnistamo redirect
 }
 
 export interface State {
-    username: string;
-    password: string;
-    verificationCode: string;
+    // No longer needed - using Tunnistamo redirect
 }
 
-const Field = ({ name, text, ...inputProps }: {
-    name: string;
-    text: string;
-    [key: string]: {};
-}) => (
-  <Form.Group>
-    <Form.Label htmlFor={name}>{text}</Form.Label>
-    <Form.Control
-      type={(name !== 'password') ? 'text' : 'password'}
-      name={name}
-      id={name}
-      {...inputProps}
-    />
-  </Form.Group>
-);
-
 export default class LoginForm extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      username: '',
-      password: '',
-      verificationCode: '',
-    };
+  handleTunnistamoLogin = () => {
+    // Redirect to custom login endpoint that preserves 'next' parameter
+    // This endpoint stores 'next' in session and redirects to admin login
+    const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+    const loginUrl = `${config.apiBaseUrl}login/?next=${returnUrl}`;
+    window.location.href = loginUrl;
   }
 
   render() {
     return (
-
-      <Form onSubmit={this.handleSubmit}>
-        {(this.props.phase === 'login') ? (
-          <>
-            <Field
-              name="username"
-              text="Käyttäjätunnus"
-              value={this.state.username}
-              onChange={this.handleChange}
-            />
-            <Field
-              name="password"
-              text="Salasana"
-              value={this.state.password}
-              onChange={this.handleChange}
-            />
-            {(this.props.loginErrorMessage) ? (
-              <Alert variant="danger">{this.props.loginErrorMessage}</Alert>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <Field
-              name="verificationCode"
-              text="Varmennuskoodi"
-              value={this.state.verificationCode}
-              onChange={this.handleChange}
-            />
-            {(this.props.verificationCodeErrorMessage) ? (
-              <Alert variant="danger">{this.props.verificationCodeErrorMessage}</Alert>
-            ) : null}
-          </>
-        )}
-        <div className="d-flex justify-content-end">
-            <Button
-                type="submit"
-                onClick={this.handleSubmit}
-                variant="primary"
-                className="submit-button d-flex align-items-center"
-            >
-                {(this.props.phase === 'login') ? (
-                    <>
-                        <span>Seuraava</span>
-                        <i className="fa fa-chevron-right" />
-                    </>
-                ) : (
-                    <>
-                        <span>Kirjaudu</span>
-                        <i className="fa fa-sign-in" />
-                    </>
-                )}
-            </Button>
-        </div>
-      </Form>
+      <div className="d-flex flex-column align-items-center">
+        <p className="mb-4">Kirjaudu sisään Turun kaupungin työntekijän tunnuksella:</p>
+        <Button
+          onClick={this.handleTunnistamoLogin}
+          variant="primary"
+          size="lg"
+          className="submit-button d-flex align-items-center"
+        >
+          <span>Turku Login</span>
+          <i className="fa fa-sign-in ms-2" />
+        </Button>
+      </div>
     );
   }
-
-    private handleChange = (event: React.FormEvent<HTMLInputElement>) => {
-      const target = event.target as HTMLInputElement;
-      if (target.name === 'username') {
-        this.setState({ username: target.value });
-      } else if (target.name === 'password') {
-        this.setState({ password: target.value });
-      } else if (target.name === 'verificationCode') {
-        this.setState({ verificationCode: target.value });
-      }
-    }
-
-    private handleSubmit = (event: React.FormEvent<HTMLElement>) => {
-      event.preventDefault();
-      const { props, state } = this;
-      if (props.phase === 'login' && props.onLogin) {
-        props.onLogin(state.username, state.password);
-      } else if (props.phase === 'verification-code'
-                   && props.onVerificationCodeSubmitted) {
-        props.onVerificationCodeSubmitted(state.verificationCode);
-      }
-      this.setState({ username: '', password: '' });
-    }
 }

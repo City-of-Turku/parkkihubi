@@ -39,6 +39,24 @@ fi
 for name in $docs; do
     echo "Generating $name documentation"
     "$openapi" build-docs "$docs_dir/$name.yaml" -o "$output_dir/$name/index.html"
+
+    # Add <base> tag to fix relative links when served from /docs/ path
+    # Remove "api/" prefix from name (e.g., "api/enforcement" -> "enforcement")
+    # Base path should be "/docs/enforcement/" not "/docs/api/enforcement/"
+    base_name=$(echo "$name" | sed 's|^api/||')
+    base_path="/docs/$base_name/"
+
+    # Use sed to insert <base> tag right after <head> tag
+    # This ensures all relative links resolve correctly
+    if [ -f "$output_dir/$name/index.html" ]; then
+        # macOS sed requires -i '' for in-place editing, Linux uses -i
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|<head>|<head>\n  <base href=\"$base_path\">|" "$output_dir/$name/index.html"
+        else
+            sed -i "s|<head>|<head>\n  <base href=\"$base_path\">|" "$output_dir/$name/index.html"
+        fi
+        echo "  Added base tag: $base_path"
+    fi
     echo
 done
 

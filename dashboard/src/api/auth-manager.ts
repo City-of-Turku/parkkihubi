@@ -1,134 +1,62 @@
-import { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { AxiosInstance } from 'axios';
 
 import { Api } from './index';
-import { AuthToken, CodeToken } from './types';
-
-class TokenStorage {
-    storeToken(token: string) {
-        if (!token) {
-            throw new Error('Cannot store empty token');
-        }
-        localStorage.setItem('AUTH_TOKEN', token);
-        localStorage.setItem('AUTH_TOKEN_STORED_AT', Date.now().toString());
-    }
-
-    getToken(): string | null {
-        return localStorage.getItem('AUTH_TOKEN');
-    }
-
-    clearToken() {
-        localStorage.removeItem('AUTH_TOKEN');
-        localStorage.removeItem('AUTH_TOKEN_STORED_AT');
-    }
-
-    getTokenAge(): number | null {
-        const timestampStr = localStorage.getItem('AUTH_TOKEN_STORED_AT');
-        if (!this.getToken() || !timestampStr) {
-            return null;
-        }
-        return Date.now() - Number(timestampStr);
-    }
-}
-
-const tokenStorage = new TokenStorage();
+import { AuthToken } from './types';
 
 export default class AuthManager {
-    /** Maximum age of the token in seconds before it is refreshed. */
-    public maxTokenAge: number = 5 * 60 * 1000;  // 5 minutes
-
     private _api: Api;
     private _axios: AxiosInstance;
-    private _authInterceptorId: number | null = null;
-    private _tokenRefreshPromise: Promise<AuthToken> | null = null;
 
     constructor(api: Api, axiosInstance: AxiosInstance) {
         this._api = api;
         this._axios = axiosInstance;
+        // Configure axios to send cookies with requests (required for session auth)
+        this._axios.defaults.withCredentials = true;
     }
 
+    /**
+     * Check if user is authenticated via session.
+     * Returns AuthToken if authenticated, null otherwise.
+     */
     checkExistingLogin(): Promise<AuthToken|null> {
-        return this.refreshLogin().then((authToken) => {
-            if (authToken) {
-                this._mountAxiosInterceptor();
-            }
-            return authToken;
-        });
-    }
-
-    initiateLogin(username: string, password: string): Promise<CodeToken> {
-        return this._axios.post<CodeToken>(
-            this._api.endpoints.authCodeToken, {username, password}).then(
-                (response) => response.data);
-    }
-
-    continueLogin(
-        codeToken: string, verificationCode: string
-    ): Promise<AuthToken> {
-        const authTokenUrl = this._api.endpoints.authAuthToken;
-        const params = {code_token: codeToken, code: verificationCode};
-        return this._axios.post<AuthToken>(authTokenUrl, params).then(
-            (response) => {
-                tokenStorage.storeToken(response.data.token);
-                this._ejectAxiosInterceptor();
-                this._mountAxiosInterceptor();
-                return response.data;
-            },
-            (error) => {
-                tokenStorage.clearToken();
-                throw error;
+        // Check authentication status via a simple API call
+        // The endpoint should return 200 if authenticated, 401/403 if not
+        return this._axios.get(this._api.endpoints.authCheck, { withCredentials: true })
+            .then((response) => {
+                // User is authenticated - return a dummy token object
+                // (we don't actually need the token for session auth)
+                if (response.data && response.data.authenticated) {
+                    return { token: 'session' } as AuthToken;
+                }
+                return null;
+            })
+            .catch((error) => {
+                // User is not authenticated or CORS/network error
+                // Log error for debugging (but don't expose to user)
+                if (error.response) {
+                    // Server responded with error status (401, 403, etc.)
+                    // This means user is not authenticated
+                    return null;
+                } else if (error.request) {
+                    // Request was made but no response received (network/CORS error)
+                    console.error('Auth check failed - network error:', error.message);
+                    // Return null to trigger login flow
+                    return null;
+                } else {
+                    // Something else happened
+                    console.error('Auth check failed:', error.message);
+                    return null;
+                }
             });
     }
 
+    /**
+     * Logout by redirecting to Tunnistamo logout endpoint
+     */
     logout() {
-        tokenStorage.clearToken();
-        this._ejectAxiosInterceptor();
-    }
-
-    refreshLogin(): Promise<AuthToken|null> {
-        if (tokenStorage.getToken()) {
-            return this._refreshToken();
-        }
-        return Promise.resolve(null);
-    }
-
-    private _mountAxiosInterceptor = () => {
-        this._authInterceptorId = (
-            this._axios.interceptors.request.use(this._authRequestInterceptor));
-    }
-
-    private _ejectAxiosInterceptor = () => {
-        if (this._authInterceptorId !== null) {
-            this._axios.interceptors.request.eject(this._authInterceptorId);
-            this._authInterceptorId = null;
-        }
-    }
-
-    private _authRequestInterceptor = (config: InternalAxiosRequestConfig) => {
-        if ((tokenStorage.getTokenAge() || 0) > this.maxTokenAge) {
-            this._refreshToken();
-        }
-
-        config.headers.Authorization = `JWT ${tokenStorage.getToken()}`;
-        return config;
-    }
-
-    private _refreshToken: (() => Promise<AuthToken>) = () => {
-        if (this._tokenRefreshPromise) {
-            return this._tokenRefreshPromise;
-        }
-        const refreshUrl = this._api.endpoints.authRefresh;
-        const promise = this._tokenRefreshPromise = this._axios.post(
-            refreshUrl, {token: tokenStorage.getToken()}).then(
-                (response) => {
-                    this._tokenRefreshPromise = null;
-                    tokenStorage.storeToken(response.data.token);
-                    return response.data;
-                },
-                (error) => {
-                    this._tokenRefreshPromise = null;
-                    tokenStorage.clearToken();
-                    throw error;
-                });
-        return promise;
+        // Redirect to Tunnistamo logout
+        const baseUrl = this._api.baseUrl || '';
+        const logoutUrl = `${baseUrl}logout/`;
+        window.location.href = logoutUrl;
     }
 }

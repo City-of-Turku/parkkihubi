@@ -24,7 +24,16 @@ assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
 #####################
 env = Env(
     ALLOWED_HOSTS=(list, []),
-    CSRF_TRUSTED_ORIGINS=(list, [])
+    CSRF_TRUSTED_ORIGINS=(list, []),
+    # Authentication settings
+    OIDC_API_AUDIENCE=(list, []),
+    OIDC_API_SCOPE_PREFIX=(str, ''),
+    OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION=(bool, True),
+    OIDC_API_ISSUER=(str, ''),
+    OIDC_API_AUTHORIZATION_FIELD=(str, ''),
+    SOCIAL_AUTH_TUNNISTAMO_KEY=(str, ''),
+    SOCIAL_AUTH_TUNNISTAMO_SECRET=(str, ''),
+    SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT=(str, ''),
 )
 env_file = os.path.join(BASE_DIR, '.env')
 if os.path.exists(env_file):
@@ -69,7 +78,10 @@ CACHES = {'default': env.cache_url(default='locmemcache://')}
 # Installed apps #
 ##################
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'helusers.apps.HelusersConfig',  # Helusers app (provides models)
+    # Note: helusers.providers.helsinki_oidc is not required - Tunnistamo works for any city
+    'social_django',  # Required for OAuth/OIDC authentication
+    'helusers.apps.HelusersAdminConfig',  # Replaces django.contrib.admin with Tunnistamo support
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -108,13 +120,61 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 ]
 
+#######################
+# Authentication      #
+#######################
+AUTHENTICATION_BACKENDS = (
+    'helusers.tunnistamo_oidc.TunnistamoOIDCAuth',
+    'django.contrib.auth.backends.ModelBackend',  # Keep for password login fallback
+)
+
+# Session serializer required for helusers (stores datetime objects)
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+# Session cookie settings for cross-origin requests (Dashboard on different port/domain)
+# For localhost development with different ports, SameSite=Lax should work
+# For production with different domains, may need SameSite=None and Secure=True
+SESSION_COOKIE_SAMESITE = 'Lax'  # 'Lax' works for localhost:3000 -> localhost:8000
+SESSION_COOKIE_HTTPONLY = True  # Security: prevent JavaScript access to session cookie
+# SESSION_COOKIE_SECURE = True  # Set to True in production (HTTPS only)
+
+# Helusers OIDC API Token Auth settings (required by helusers)
+OIDC_API_TOKEN_AUTH = {
+    'AUDIENCE': env('OIDC_API_AUDIENCE'),
+    'API_SCOPE_PREFIX': env('OIDC_API_SCOPE_PREFIX'),
+    'API_AUTHORIZATION_FIELD': env('OIDC_API_AUTHORIZATION_FIELD'),
+    'REQUIRE_API_SCOPE_FOR_AUTHENTICATION': env('OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION'),
+    'ISSUER': env('OIDC_API_ISSUER'),
+}
+
+# Logout redirect URL (required by helusers for social auth logout)
+LOGOUT_REDIRECT_URL = '/admin/'
+
+# Default login redirect URL (Django default is /accounts/profile/)
+# We use a custom redirect view to handle 'next' parameter properly
+LOGIN_REDIRECT_URL = '/login-redirect/'
+
+# Social auth (Tunnistamo) redirect settings
+# After successful login, redirect to our custom redirect view which handles 'next' parameter
+# social_django will automatically append ?next=... to the redirect URL if it was passed
+# in the OAuth authorization URL (which we do in the template)
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/login-redirect/'
+SOCIAL_AUTH_NEW_USER_REDIRECT_URL = '/login-redirect/'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/admin/login/'
+
+# Social auth provider configuration for Tunnistamo
+# The provider name 'tunnistamo' is used by helusers
+SOCIAL_AUTH_TUNNISTAMO_KEY = env('SOCIAL_AUTH_TUNNISTAMO_KEY')
+SOCIAL_AUTH_TUNNISTAMO_SECRET = env('SOCIAL_AUTH_TUNNISTAMO_SECRET')
+SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT = env('SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT')
+
 #############
 # Templates #
 #############
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR, 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -172,9 +232,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'parkings.authentication.ApiKeyAuthentication',
-        'drf_jwt_2fa.authentication.Jwt2faAuthentication',
-    ] + ([  # Following two are only for DEBUG mode in dev environment:
-        'rest_framework.authentication.SessionAuthentication',
+        'helusers.tunnistamo_oidc.TunnistamoOIDCAuth',
+        'rest_framework.authentication.SessionAuthentication',  # Required for Dashboard Tunnistamo auth
+    ] + ([  # Following is only for DEBUG mode in dev environment:
         'rest_framework.authentication.BasicAuthentication',
     ] if (DEBUG and TIER == 'dev') else []),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
@@ -186,25 +246,28 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
-JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': timedelta(minutes=30),
-    'JWT_ALLOW_REFRESH': True,
-    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
-}
+# JWT and 2FA authentication removed - using Tunnistamo OIDC instead
+# JWT_AUTH = {
+#     'JWT_EXPIRATION_DELTA': timedelta(minutes=30),
+#     'JWT_ALLOW_REFRESH': True,
+#     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+# }
+#
+# JWT2FA_AUTH = {
+#     'CODE_TOKEN_THROTTLE_RATE': '5/15m',
+#     'AUTH_TOKEN_RETRY_WAIT_TIME': timedelta(seconds=10),
+#     'EMAIL_SENDER_SUBJECT_OVERRIDE': '{code} - Varmennuskoodisi',
+#     'EMAIL_SENDER_BODY_OVERRIDE': (
+#         'Hei!\n'
+#         '\n'
+#         'Varmennuskoodisi kirjautumista varten on: {code}\n'
+#         '\n'
+#         't. Parkkihubi'),
+# }
 
-JWT2FA_AUTH = {
-    'CODE_TOKEN_THROTTLE_RATE': '5/15m',
-    'AUTH_TOKEN_RETRY_WAIT_TIME': timedelta(seconds=10),
-    'EMAIL_SENDER_SUBJECT_OVERRIDE': '{code} - Varmennuskoodisi',
-    'EMAIL_SENDER_BODY_OVERRIDE': (
-        'Hei!\n'
-        '\n'
-        'Varmennuskoodisi kirjautumista varten on: {code}\n'
-        '\n'
-        't. Parkkihubi'),
-}
-
+# CORS settings - allow all origins and credentials for Dashboard integration
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True  # Required for session cookies to work with CORS
 
 ##############
 # Parkkihubi #
@@ -223,7 +286,7 @@ PARKKIHUBI_ENFORCEMENT_API_ENABLED = (
 PARKKIHUBI_DATA_API_ENABLED = env.bool('PARKKIHUBI_DATA_API_ENABLED', True)
 
 PARKKIHUBI_PERMITS_PRUNABLE_AFTER = timedelta(days=3)
-DEFAULT_ENFORCEMENT_DOMAIN = ('Helsinki', 'HKI')
+DEFAULT_ENFORCEMENT_DOMAIN = ('Turku', 'TKU')  # Changed from ('Helsinki', 'HKI')
 PARKKIHUBI_REGISTRATION_NUMBERS_REMOVABLE_AFTER = timedelta(hours=24)
 
 LOGGING = {

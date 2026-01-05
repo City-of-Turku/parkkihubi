@@ -21,41 +21,8 @@ export function checkExistingLogin() {
         },
         (error) => {
           dispatch(actions.resolveExistingLoginCheck());
-          throw error;
+          // Don't throw error - just mark as not logged in
         });
-  };
-}
-
-export function initiateLogin(username: string, password: string) {
-  return (dispatch: Dispatch<Action>) => {
-    dispatch(actions.requestCodeToken());
-    api.auth.initiateLogin(username, password).then(
-        (codeToken) => {
-          dispatch(actions.receiveCodeToken(codeToken.token));
-        },
-        (error) => {
-          dispatch(actions.receiveCodeTokenFailure(
-              `${error.response.statusText} `
-              + `-- ${JSON.stringify(error.response.data)}`));
-        });
-  };
-}
-
-export function continueLogin(verificationCode: string) {
-  return (dispatch: Dispatch<Action>, getState: () => RootState) => {
-    dispatch(actions.requestAuthToken());
-    const { codeToken } = getState().auth;
-    if (codeToken) {
-      api.auth.continueLogin(codeToken, verificationCode).then(
-          (authToken) => {
-            dispatch(actions.receiveAuthToken(authToken.token));
-          },
-          (error) => {
-            dispatch(actions.receiveAuthTokenFailure(
-                `${error.response.statusText} `
-                + `-- ${JSON.stringify(error.response.data)}`));
-          });
-    }
   };
 }
 

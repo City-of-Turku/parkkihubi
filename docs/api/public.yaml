@@ -420,7 +420,108 @@ paths:
         404:
           $ref: '#/responses/NotFound'
 
+  /archived_parking/:
+    get:
+      tags:
+        - archived_parking
+      summary: Get a list of anonymized archived parkings
+      description: Fetch anonymized archived parkings.
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          description: Pagination page number
+        - name: page_size
+          in: query
+          type: integer
+          description: Pagination page size
+        - name: time_start__gte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived parkings with time_start greater than or equal to the given datetime string.
+        - name: time_start__lte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived parkings with time_start less than or equal to the given datetime string.
+        - name: archived_at__gte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived parkings with archived_at greater than or equal to the given datetime string.
+        - name: archived_at__lte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived parkings with archived_at less than or equal to the given datetime string.
+      responses:
+        200:
+          description: |
+            An array of anonymized archived parkings with metadata information
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total number of returned objects
+              next:
+                type: string
+                description: Next page URL
+              previous:
+                type: string
+                description: Previous page URL
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/ArchivedParkingAnonymized'
+
 definitions:
+  ArchivedParkingAnonymized:
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the parking
+        type: string
+        format: uuid
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+      modified_at:
+        type: string
+        format: date-time
+      location:
+        $ref: '#/definitions/Location'
+      location_gk25fin:
+        $ref: '#/definitions/Location'
+      time_start:
+        $ref: '#/definitions/TimeStart'
+      time_end:
+        $ref: '#/definitions/TimeEnd'
+      terminal_number:
+        type: string
+      is_disc_parking:
+        type: boolean
+      operator:
+        type: string
+      domain:
+        type: integer
+      region:
+        type: string
+      parking_area:
+        type: string
+      terminal:
+        type: string
+      zone:
+        type: integer
+      archived_at:
+        type: string
+        format: date-time
+      sanitized_at:
+        type: string
+        format: date-time
+
   Parking:
     type: object
     example:

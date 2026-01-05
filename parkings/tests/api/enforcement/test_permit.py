@@ -198,6 +198,8 @@ def test_permit_creation_normalizes_timestamps(
             'start_time': '1970-01-01T00:00:00+00:00',
             'end_time': input_timestamp,
             'registration_number': 'abc-123',
+            'address': None,
+            'zip': None,
         }],
         'areas': [{
             'start_time': '1970-01-01T00:00:00+00:00',
@@ -249,7 +251,7 @@ def check_permit_object_keys(data):
 
 
 def check_permit_subject_keys(data):
-    assert set(data.keys()) == {'start_time', 'end_time', 'registration_number'}
+    assert set(data.keys()) == {'start_time', 'end_time', 'registration_number', 'address', 'zip'}
 
 
 def check_permit_areas_keys(data):
@@ -312,6 +314,8 @@ def test_permit_bulk_create_normalizes_timestamps(enforcer_api_client):
                 'start_time': '1970-01-01T01:23:00+01:23',
                 'end_time': '2030-06-30T12:00+03:00',
                 'registration_number': 'REG-1',
+                'address': None,
+                'zip': None,
             }],
             'areas': [{
                 'start_time': '1970-01-01T00:00:00Z',
@@ -326,6 +330,8 @@ def test_permit_bulk_create_normalizes_timestamps(enforcer_api_client):
                 'start_time': '1969-12-31T22:00:00-02:00',
                 'end_time': '2030-06-30T10:00+01:00',
                 'registration_number': 'REG-2',
+                'address': None,
+                'zip': None,
             }],
             'areas': [{
                 'start_time': '1970-01-01T00:00:00+00:00',

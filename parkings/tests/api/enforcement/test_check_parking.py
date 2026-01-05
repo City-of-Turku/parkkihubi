@@ -98,6 +98,8 @@ def create_permit(domain, permit_series=None, end_time=None, registration_number
             "end_time": str(end_time),
             "start_time": str(start_time),
             "registration_number": registration_number,
+            "address": "Puutarhakatu 1",
+            "zip": "20100"
         }
     ]
     areas = [{"area": area, "end_time": str(end_time), "start_time": str(start_time)}]

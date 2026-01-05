@@ -5,7 +5,9 @@ export const isDev: boolean = (import.meta.env.MODE === 'development');
 export const apiBaseUrl: string = import.meta.env.VITE_API_URL || (
     (isDev)
         ? 'http://localhost:8000/'
-        : 'https://parkki.turku.fi/');
+        : window.location.href.includes('test')
+            ? 'https://testiparkki.turku.fi/'
+            : 'https://parkki.turku.fi/');
 
 let mapPoint: Point;
 if (typeof import.meta.env.VITE_API_CENTER !== 'undefined') {

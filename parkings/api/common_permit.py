@@ -8,12 +8,13 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from ..models import Permit, PermitArea, PermitSeries
+from ..models.constants import PERMIT_TYPES
 
 
 class PermitSeriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = PermitSeries
-        fields = ['id', 'created_at', 'modified_at', 'active']
+        fields = ['id', 'created_at', 'modified_at', 'active', 'type']
         read_only_fields = fields
 
 
@@ -25,12 +26,20 @@ class CreateAndReadOnlyModelViewSet(
     pass
 
 
+def validate_type(type_value):
+    valid_codes = {code for code, _ in PERMIT_TYPES}
+    if type_value is None:
+        return None
+    else:
+        return type_value.strip().upper() if type_value.strip().upper() in valid_codes else None
+
+
 class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
     queryset = PermitSeries.objects.all()
     serializer_class = PermitSeriesSerializer
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(owner=self.request.user, type=validate_type(self.request.data.get('type', None)))
 
     def get_queryset(self):
         return super().get_queryset().filter(owner=self.request.user)
