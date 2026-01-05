@@ -1197,22 +1197,23 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-    delete:
-      tags: ['Permits']
-      summary: Delete a permit
-      operationId: deletePermit
-      security: [{ApiKey: []}]
-      parameters:
-        - << : *permitParamId
-      responses:
-        '204':
-          description: The permit was deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+#    Deleting a permit through API is currently not allowed
+#    delete:
+#      tags: ['Permits']
+#      summary: Delete a permit
+#      operationId: deletePermit
+#      security: [{ApiKey: []}]
+#      parameters:
+#        - << : *permitParamId
+#      responses:
+#        '204':
+#          description: The permit was deleted successfully
+#        '401':
+#          $ref: '#/components/responses/Unauthorized'
+#        '403':
+#          $ref: '#/components/responses/Forbidden'
+#        '404':
+#          $ref: '#/components/responses/NotFound'
   /activepermit/:
     get:
       tags: ['Active Permits by External Id']
