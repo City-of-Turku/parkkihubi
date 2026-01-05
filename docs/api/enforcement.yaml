@@ -164,6 +164,17 @@ components:
         name:
           description: Name of the parking operator
           type: string
+    PermitTypeCode:
+      description: Specifies which kind of permit is in question
+      type: string
+      enum:
+        - RESIDENT
+        - BUSINESS
+        - CAR_SHARE
+        - HOME_CARE
+        - MOVIE
+        - SPECIAL_MONITORING
+        - STAFF
     PermitSeries:
       type: object
       properties:
@@ -183,8 +194,13 @@ components:
         active:
           description: Specifies whether the series is currently active
           type: boolean
+        type:
+          $ref: '#/components/schemas/PermitTypeCode'
     Permit:
       type: object
+      required:
+        - domain
+        - series
       properties:
         id:
           description: Unique identifier of the permit object
@@ -769,6 +785,9 @@ paths:
           application/json:
             schema:
               type: object
+              properties:
+                      type:
+                        $ref: '#/components/schemas/PermitTypeCode'
       responses:
         '201':
           description: Permit series was created successfully
