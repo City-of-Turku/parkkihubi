@@ -1,4 +1,6 @@
 param location string = resourceGroup().location
+@allowed(['test', 'prod'])
+param environment string = 'test'
 param apiImageName string
 @description('API WebApp name. Must be globally unique')
 param apiWebAppName string
@@ -81,56 +83,55 @@ param apiAppSettings object = {
 ])
 param cacheCapacity int = 1
 
-var webAppRequirements = [
-  {
-    name: apiWebAppName
-    image: apiImageName
-    allowKeyvaultSecrets: true
-    applicationGatewayAccessOnly: true
-    appSettings: {
-      ALLOWED_HOSTS: '${apiInternalUrl},127.0.0.1,localhost,${apiUrlAllowedHost}'
-      CSRF_TRUSTED_ORIGINS: apiUrl
-      DATABASE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::dbUrlSecret.name})'
-      CACHE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::cacheUrlSecret.name})'
-      SOCIAL_AUTH_TUNNISTAMO_KEY: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoKeySecret.name})'
-      SOCIAL_AUTH_TUNNISTAMO_SECRET: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoSecretSecret.name})'
-      SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: socialAuthTunnistamoOidcEndpoint
-      OIDC_API_AUDIENCE: oidcApiAudience
-      OIDC_API_SCOPE_PREFIX: oidcApiScopePrefix
-      OIDC_API_ISSUER: oidcApiIssuer
-      OIDC_API_AUTHORIZATION_FIELD: oidcApiAuthorizationField
-      OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: string(oidcApiRequireScopeForAuthentication)
-      ...apiAppSettings
-    }
-    fileshares: {
-      files: '/fileshare'
-    }
+var primaryWebAppRequirement = {
+  name: apiWebAppName
+  image: apiImageName
+  allowKeyvaultSecrets: true
+  applicationGatewayAccessOnly: true
+  appSettings: {
+    ALLOWED_HOSTS: '${apiInternalUrl},127.0.0.1,localhost,${apiUrlAllowedHost}'
+    CSRF_TRUSTED_ORIGINS: apiUrl
+    DATABASE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::dbUrlSecret.name})'
+    CACHE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::cacheUrlSecret.name})'
+    SOCIAL_AUTH_TUNNISTAMO_KEY: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoKeySecret.name})'
+    SOCIAL_AUTH_TUNNISTAMO_SECRET: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoSecretSecret.name})'
+    SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: socialAuthTunnistamoOidcEndpoint
+    OIDC_API_AUDIENCE: oidcApiAudience
+    OIDC_API_SCOPE_PREFIX: oidcApiScopePrefix
+    OIDC_API_ISSUER: oidcApiIssuer
+    OIDC_API_AUTHORIZATION_FIELD: oidcApiAuthorizationField
+    OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: string(oidcApiRequireScopeForAuthentication)
+    ...apiAppSettings
   }
-  {
-    name: apiReplicaWebAppName
-    image: apiImageName
-    allowKeyvaultSecrets: true
-    applicationGatewayAccessOnly: true
-    appSettings: {
-      ALLOWED_HOSTS: '${apiReplicaInternalUrl},127.0.0.1,localhost,${apiReplicaUrlAllowedHost}'
-      CSRF_TRUSTED_ORIGINS: apiReplicaUrl
-      DATABASE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::dbReplicaUrlSecret.name})'
-      CACHE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::cacheReplicaUrlSecret.name})'
-      SOCIAL_AUTH_TUNNISTAMO_KEY: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoKeySecret.name})'
-      SOCIAL_AUTH_TUNNISTAMO_SECRET: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoSecretSecret.name})'
-      SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: socialAuthTunnistamoOidcEndpoint
-      OIDC_API_AUDIENCE: oidcApiAudience
-      OIDC_API_SCOPE_PREFIX: oidcApiScopePrefix
-      OIDC_API_ISSUER: oidcApiIssuer
-      OIDC_API_AUTHORIZATION_FIELD: oidcApiAuthorizationField
-      OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: string(oidcApiRequireScopeForAuthentication)
-      ...apiAppSettings
-    }
-    fileshares: {
-      files: '/fileshare'
-    }
+  fileshares: {
+    files: '/fileshare'
   }
-]
+}
+var replicaWebAppRequirement = {
+  name: apiReplicaWebAppName
+  image: apiImageName
+  allowKeyvaultSecrets: true
+  applicationGatewayAccessOnly: true
+  appSettings: {
+    ALLOWED_HOSTS: '${apiReplicaInternalUrl},127.0.0.1,localhost,${apiReplicaUrlAllowedHost}'
+    CSRF_TRUSTED_ORIGINS: apiReplicaUrl
+    DATABASE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::dbReplicaUrlSecret.name})'
+    CACHE_URL: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::cacheReplicaUrlSecret.name})'
+    SOCIAL_AUTH_TUNNISTAMO_KEY: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoKeySecret.name})'
+    SOCIAL_AUTH_TUNNISTAMO_SECRET: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::socialAuthTunnistamoSecretSecret.name})'
+    SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: socialAuthTunnistamoOidcEndpoint
+    OIDC_API_AUDIENCE: oidcApiAudience
+    OIDC_API_SCOPE_PREFIX: oidcApiScopePrefix
+    OIDC_API_ISSUER: oidcApiIssuer
+    OIDC_API_AUTHORIZATION_FIELD: oidcApiAuthorizationField
+    OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: string(oidcApiRequireScopeForAuthentication)
+    ...apiAppSettings
+  }
+  fileshares: {
+    files: '/fileshare'
+  }
+}
+var webAppRequirements = concat([primaryWebAppRequirement], environment == 'prod' ? [replicaWebAppRequirement] : [])
 
 var fileshareNames = union(flatten(map(webAppRequirements, x => objectKeys(x.fileshares))), []) // union removes duplicate keys
 
@@ -187,7 +188,7 @@ var privateEndpointRequirements = [
   }
   {
     name: '${keyvaultName}-endpoint'
-    privatelinkServiceId: keyvault.id
+    privateLinkServiceId: keyvault.id
     groupId: 'vault'
     privateDnsZoneName: 'privatelink.vaultcore.azure.net'
     privateDnsZoneId: dnsZone[4].id
@@ -195,13 +196,6 @@ var privateEndpointRequirements = [
   {
     name: '${dbServerName}-endpoint'
     privateLinkServiceId: db.id
-    groupId: 'postgresqlServer'
-    privateDnsZoneName: 'privatelink.postgres.database.azure.com'
-    privateDnsZoneId: dnsZone[2].id
-  }
-  {
-    name: '${dbServerReplicaName}-endpoint'
-    privateLinkServiceId: dbReplica.id
     groupId: 'postgresqlServer'
     privateDnsZoneName: 'privatelink.postgres.database.azure.com'
     privateDnsZoneId: dnsZone[2].id
@@ -409,13 +403,20 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
   ]
 }
 
+var dbStorage = environment == 'prod' ? {
+  iops: 120
+  tier: 'P4'
+  storageSizeGB: 32
+  autoGrow: 'Disabled'
+} : {
+  iops: 120
+  tier: 'P4'
+  storageSizeGB: 32
+  autoGrow: 'Disabled'
+}
+
 var dbProperties = {
-  storage: {
-    iops: 120
-    tier: 'P4'
-    storageSizeGB: 32
-    autoGrow: 'Disabled'
-  }
+  storage: dbStorage
   network: {
     publicNetworkAccess: 'Enabled'
   }
@@ -432,10 +433,12 @@ var dbProperties = {
   availabilityZone: '2'
 }
 
-var dbSku = {
-  // Must be above Burstable for replication
+var dbSku = environment == 'prod' ? {
   name: 'Standard_D2ds_v5'
   tier: 'GeneralPurpose'
+} : {
+  name: 'Standard_B2s'
+  tier: 'Burstable'
 }
 
 resource db 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
@@ -463,7 +466,7 @@ resource db 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
   ]
 }
 
-resource dbReplica 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
+resource dbReplica 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = if (environment == 'prod') {
   name: dbServerReplicaName
   location: location
   sku: dbSku
@@ -566,16 +569,24 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
+var serverfarmPlanSku = environment == 'prod' ? {
+  name: 'P0v3'
+  tier: 'Premium0V3'
+  size: 'P0v3'
+  family: 'Pv3'
+  capacity: 1
+} : {
+  name: 'B2'
+  tier: 'Basic'
+  size: 'B2'
+  family: 'B'
+  capacity: 1
+}
+
 resource serverfarmPlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: serverfarmPlanName
   location: location
-  sku: {
-    name: 'P0v3'
-    tier: 'Premium0V3'
-    size: 'P0v3'
-    family: 'Pv3'
-    capacity: 1
-  }
+  sku: serverfarmPlanSku
   kind: 'linux'
   properties: {
     perSiteScaling: false
@@ -629,6 +640,41 @@ resource privateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZone
     }
   }
 ]
+
+resource replicaPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = if (environment == 'prod') {
+  name: '${dbServerReplicaName}-endpoint'
+  location: location
+  properties: {
+    customNetworkInterfaceName: '${dbServerReplicaName}-endpoint-nic'
+    subnet: {
+      id: vnet::subnets[1].id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${dbServerReplicaName}-endpoint'
+        properties: {
+          privateLinkServiceId: dbReplica.id
+          groupIds: ['postgresqlServer']
+        }
+      }
+    ]
+  }
+}
+
+resource replicaPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = if (environment == 'prod') {
+  parent: replicaPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink.postgres.database.azure.com'
+        properties: {
+          privateDnsZoneId: dnsZone[2].id
+        }
+      }
+    ]
+  }
+}
 
 resource applicationGatewayVnet 'Microsoft.Network/virtualNetworks@2020-11-01' existing = {
   name: 'turku-common-vnet'
@@ -790,7 +836,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
   }
 
-  resource dbReplicaUrlSecret 'secrets' = {
+  resource dbReplicaUrlSecret 'secrets' = if (environment == 'prod') {
     name: 'dbReplicaUrl'
     properties: {
       value: 'postgis://${dbUsername}:${dbPassword}@${dbServerReplicaName}.postgres.database.azure.com/${dbName}'
@@ -804,7 +850,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
   }
 
-  resource cacheReplicaUrlSecret 'secrets' = {
+  resource cacheReplicaUrlSecret 'secrets' = if (environment == 'prod') {
     name: 'cacheReplicaUrl'
     properties: {
       value: 'rediss://:${cache.listKeys().primaryKey}@${cacheName}.redis.cache.windows.net:6380/1'

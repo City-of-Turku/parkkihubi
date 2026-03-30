@@ -168,6 +168,25 @@ SOCIAL_AUTH_TUNNISTAMO_KEY = env('SOCIAL_AUTH_TUNNISTAMO_KEY')
 SOCIAL_AUTH_TUNNISTAMO_SECRET = env('SOCIAL_AUTH_TUNNISTAMO_SECRET')
 SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT = env('SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT')
 
+# Social auth pipeline configuration
+# This pipeline enables email-based matching to link existing users with Tunnistamo accounts
+# When a user logs in via Tunnistamo, it will:
+# 1. First try to find existing UserSocialAuth by 'sub' claim (normal OAuth flow)
+# 2. If not found, try to associate by email address (links existing admin-created users)
+# 3. If still not found, create a new user
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',  # Link existing users by email
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
 #############
 # Templates #
 #############
