@@ -26,7 +26,9 @@ class ArchivedParkingAnonymizedSerializer(serializers.ModelSerializer):
 
 class PublicAPIArchivedParkingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [permissions.AllowAny]
-    queryset = ArchivedParking.objects.all().order_by('-time_start')
+    queryset = ArchivedParking.objects.select_related(
+        'operator', 'domain', 'region', 'parking_area', 'terminal', 'zone',
+    ).order_by('-time_start')
     serializer_class = ArchivedParkingAnonymizedSerializer
     pagination_class = Pagination
     filter_backends = [DjangoFilterBackend]
