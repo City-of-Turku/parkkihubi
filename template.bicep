@@ -131,7 +131,7 @@ var replicaWebAppRequirement = {
     files: '/fileshare'
   }
 }
-var webAppRequirements = concat([primaryWebAppRequirement], environment == 'prod' ? [replicaWebAppRequirement] : [])
+var webAppRequirements = concat([primaryWebAppRequirement], [replicaWebAppRequirement])
 
 var fileshareNames = union(flatten(map(webAppRequirements, x => objectKeys(x.fileshares))), []) // union removes duplicate keys
 
@@ -466,7 +466,7 @@ resource db 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
   ]
 }
 
-resource dbReplica 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = if (environment == 'prod') {
+resource dbReplica 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
   name: dbServerReplicaName
   location: location
   sku: dbSku
@@ -641,7 +641,7 @@ resource privateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZone
   }
 ]
 
-resource replicaPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = if (environment == 'prod') {
+resource replicaPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   name: '${dbServerReplicaName}-endpoint'
   location: location
   properties: {
@@ -661,7 +661,7 @@ resource replicaPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' 
   }
 }
 
-resource replicaPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = if (environment == 'prod') {
+resource replicaPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
   parent: replicaPrivateEndpoint
   name: 'default'
   properties: {
@@ -836,7 +836,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
   }
 
-  resource dbReplicaUrlSecret 'secrets' = if (environment == 'prod') {
+  resource dbReplicaUrlSecret 'secrets' = {
     name: 'dbReplicaUrl'
     properties: {
       value: 'postgis://${dbUsername}:${dbPassword}@${dbServerReplicaName}.postgres.database.azure.com/${dbName}'
@@ -850,7 +850,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     }
   }
 
-  resource cacheReplicaUrlSecret 'secrets' = if (environment == 'prod') {
+  resource cacheReplicaUrlSecret 'secrets' = {
     name: 'cacheReplicaUrl'
     properties: {
       value: 'rediss://:${cache.listKeys().primaryKey}@${cacheName}.redis.cache.windows.net:6380/1'

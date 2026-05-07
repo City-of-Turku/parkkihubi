@@ -2,7 +2,7 @@ using 'template.bicep'
 
 var prefix = readEnvironmentVariable('RESOURCE_PREFIX')
 var sanitizedPrefix = replace(prefix, '-', '')
-// Set to 'prod' or 'test'. Test uses cheaper SKUs and deploys only primary API (no replica DB or replica web app).
+// Set to 'prod' or 'test'. Test uses cheaper SKUs.
 param environment = 'test'
 param apiImageName = 'api'
 param apiInternalUrl = '${prefix}-api.azurewebsites.net'
