@@ -30,7 +30,7 @@ interface PaginatedList {
 }
 
 // Type of the Features returned by the API
-interface ApiFeature<G extends GObj, I extends string, P> extends
+interface ApiFeature<G extends GObj, I extends string | number, P> extends
 geojson.Feature<G, P> {
     type: 'Feature';
     geometry: G;
@@ -39,7 +39,7 @@ geojson.Feature<G, P> {
 }
 
 // Type of the Feature Collections returned by the API
-interface ApiFeatureCollection<G extends GObj, I extends string, P> extends
+interface ApiFeatureCollection<G extends GObj, I extends string | number, P> extends
 geojson.FeatureCollection<G, P> {
     type: 'FeatureCollection';
     features: Array<ApiFeature<G, I, P>>;
@@ -89,4 +89,26 @@ export interface ParkingProperties {
     time_end?: string|null;
     created_at: string;
     modified_at: string;
+}
+
+export type PermitArea = ApiFeature<MPoly, number, PermitAreaProperties>;
+
+export interface PermitAreaList extends
+ApiFeatureCollection<MPoly, number, PermitAreaProperties>,
+PaginatedList {
+}
+
+export interface PermitAreaProperties {
+    identifier: string;
+    name: string;
+    area_km2: number;
+}
+
+export interface PermitAreaStatsList extends PaginatedList {
+    results: PermitAreaStats[];
+}
+
+export interface PermitAreaStats {
+    id: number;
+    permit_count: number;
 }

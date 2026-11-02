@@ -3,14 +3,9 @@ import * as geojson from 'geojson';
 import * as Leaflet from 'leaflet';
 import { MapViewport, Point, Region, RegionProperties } from './types';
 
-import { mapTilesUrl } from '../config';
+import BaseMapLayers from './BaseMapLayers';
 import './ParkingRegionsMap.css';
-import {
-    TileLayer,
-    MapContainer,
-    GeoJSON,
-    ScaleControl,
-} from 'react-leaflet';
+import { MapContainer, GeoJSON } from 'react-leaflet';
 
 export interface Props {
     center: Point;
@@ -32,22 +27,10 @@ export default function ParkingRegionsMap(props: Props) {
             ) => bindPopupToRegion(region, layer, props)}
         />
     ) : null;
-    const osmAttribution = (
-        'Pohjakartta &copy; Turun kaupunki, '
-        + '<a href="https://creativecommons.org/licenses/by/4.0/deed.fi">'
-        + 'käyttölupa CC BY 4.0</a>'
-        + ' | &copy; <a href="https://www.openstreetmap.org/copyright">'
-        + 'OpenStreetMapin tekijät</a>');
     return (
         <MapContainer center={props.center}
                       zoom={props.zoom}>
-            <TileLayer
-                attribution={osmAttribution}
-                url={mapTilesUrl}
-            />
-            <ScaleControl metric={true}
-                          imperial={false}
-                          maxWidth={150}/>
+            <BaseMapLayers />
             {geoJsonElement}
         </MapContainer>
     );

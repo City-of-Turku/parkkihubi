@@ -57,3 +57,17 @@ function parseTime(value: string): number {
 function parseNullableTime(value?: string|null): number|undefined {
     return (value) ? parseTime(value) : undefined;
 }
+
+export function convertPermitArea(area: api.PermitArea): any {
+    const p = area.properties;
+    return {
+        id: area.id,
+        type: area.type,
+        geometry: area.geometry,
+        properties: {
+            identifier: p.identifier,
+            name: p.name,
+            areaKm2: p.area_km2,
+        },
+    };
+}

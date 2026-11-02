@@ -5,7 +5,7 @@ import * as actions from './actions';
 import { Action } from './actions';
 import api from './api';
 import { MapViewport } from './components/types';
-import { RootState } from './types';
+import { DashboardTab, RootState } from './types';
 
 const updateInterval = 5 * 60 * 1000;  // 5 minutes in ms
 
@@ -68,6 +68,9 @@ function fetchMissingData(time: moment.Moment) {
     if (!(timestamp in state.validParkingsHistory)) {
       dispatch(fetchValidParkings(time));
     }
+    if (!(timestamp in state.permitCountHistory)) {
+      dispatch(fetchPermitAreaStats(time));
+    }
   };
 }
 
@@ -128,6 +131,42 @@ export function fetchValidParkings(time: moment.Moment) {
         },
         (error) => {
           alert('Valid parkings fetch failed: ' + error);
+        });
+  };
+}
+
+export function setActiveTab(tab: DashboardTab) {
+  return (dispatch: Dispatch<Action>) => {
+    dispatch(actions.setActiveTab(tab));
+  };
+}
+
+export function fetchPermitAreaStats(time: moment.Moment) {
+  return (dispatch: Dispatch<any>, getState: () => RootState) => {
+    const {permitAreas} = getState();
+    api.fetchPermitAreaStats(
+        time,
+        (response) => {
+          const results = response.data.results || [];
+          if (results.some((x: {id: number}) => !(x.id in permitAreas))) {
+            dispatch(fetchPermitAreas());
+          }
+          dispatch(actions.receivePermitAreaStats(response.data, time));
+        },
+        (error) => {
+          alert('Permit area statistics fetch failed: ' + error);
+        });
+  };
+}
+
+export function fetchPermitAreas() {
+  return (dispatch: Dispatch<Action>) => {
+    api.fetchPermitAreas(
+        (response) => {
+          dispatch(actions.receivePermitAreas(response.data));
+        },
+        (error) => {
+          alert('Permit area fetch failed: ' + error);
         });
   };
 }

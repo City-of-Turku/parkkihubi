@@ -7,6 +7,7 @@ api/enforcement
 api/operator
 api/public
 api/data
+api/monitoring
 "
 
 docs_dir=$(cd "$(dirname "$0")" && pwd)/docs
