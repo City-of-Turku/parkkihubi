@@ -3,6 +3,7 @@ import * as geojson from 'geojson';
 import * as Leaflet from 'leaflet';
 import { MapViewport, Point, Region, RegionProperties } from './types';
 
+import { mapTilesUrl } from '../config';
 import './ParkingRegionsMap.css';
 import {
     TileLayer,
@@ -32,14 +33,17 @@ export default function ParkingRegionsMap(props: Props) {
         />
     ) : null;
     const osmAttribution = (
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
-        + ' contributors');
+        'Pohjakartta &copy; Turun kaupunki, '
+        + '<a href="https://creativecommons.org/licenses/by/4.0/deed.fi">'
+        + 'käyttölupa CC BY 4.0</a>'
+        + ' | &copy; <a href="https://www.openstreetmap.org/copyright">'
+        + 'OpenStreetMapin tekijät</a>');
     return (
         <MapContainer center={props.center}
                       zoom={props.zoom}>
             <TileLayer
                 attribution={osmAttribution}
-                url="//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url={mapTilesUrl}
             />
             <ScaleControl metric={true}
                           imperial={false}
