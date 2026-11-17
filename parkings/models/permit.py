@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ..fields import CleaningJsonField
+from ..utils.querysets import make_batches
 from ..validators import (
     DictListValidator, NullableTextField, TextField, TimestampField)
 from .constants import GK25FIN_SRID, PERMIT_TYPES
@@ -173,6 +174,36 @@ class PermitQuerySet(models.QuerySet):
             subjects.anonymize()
         return count
 
+    def archive(
+        self,
+        batch_size=10000,
+        limit=None,
+        pre_archive_callback=(lambda batch, total: None),
+        post_archive_callback=(lambda batch, total: None),
+        dry_run=False,
+    ):
+        """
+        Archive the permits of this queryset in batches.
+
+        :returns: Number of archived permits
+        """
+        if limit and batch_size > limit:
+            batch_size = limit
+        total_archived = 0
+        for batch in make_batches(self, batch_size, "created_at"):
+            if limit and total_archived + batch_size > limit:
+                batch = batch[:limit - total_archived]
+            pre_archive_callback(batch, total_archived)
+            if not dry_run:
+                (_archived, count) = ArchivedPermit.archive_in_bulk(batch)
+            else:
+                count = batch.count()
+            total_archived += count
+            post_archive_callback(batch, total_archived)
+            if limit and total_archived >= limit:
+                break
+        return total_archived
+
     def bulk_create(self, permits, *args, **kwargs):
         for permit in permits:
             assert isinstance(permit, Permit)
@@ -323,6 +354,82 @@ class Permit(TimestampedModelMixin, models.Model):
                     start_time=start_time,
                     end_time=end_time
                 )
+
+
+class ArchivedPermit(TimestampedModelMixin, models.Model):
+    """
+    Permit that has ended and been moved out of the active permit table.
+
+    Registration numbers of the subjects are removed upon archiving.
+    """
+    created_at = models.DateTimeField(
+        verbose_name=_("time created"), editable=False)
+    modified_at = models.DateTimeField(
+        verbose_name=_("time modified"), editable=False)
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='archived_permits')
+    series = models.ForeignKey(
+        PermitSeries, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='archived_permits')
+    external_id = models.CharField(max_length=50, null=True, blank=True)
+    subjects = JSONField(blank=True, encoder=DjangoJSONEncoder)
+    areas = JSONField(blank=True, encoder=DjangoJSONEncoder)
+    properties = JSONField(
+        blank=True, null=True, encoder=DjangoJSONEncoder,
+        verbose_name=_("properties"))
+    archived_at = models.DateTimeField(
+        auto_now_add=True, db_index=True, verbose_name=_("time archived"))
+
+    class Meta:
+        verbose_name = _("archived permit")
+        verbose_name_plural = _("archived permits")
+        ordering = ('series', 'id')
+
+    def __str__(self):
+        return 'Permit {} ({}) (archived)'.format(self.id, self.domain.code)
+
+    def archive(self):
+        return self
+
+    @classmethod
+    def archive_in_bulk(cls, permits):
+        """
+        Archive given permits in bulk.
+
+        Copies the permits to the ArchivedPermit table with registration
+        numbers removed and deletes the originals (and thereby their
+        lookup, subject and area items).
+
+        :param permits: QuerySet of Permit objects to archive.
+        :returns: A tuple (qs, n) where qs is the queryset of the
+                  created ArchivedPermit objects and n is the number of
+                  archived Permit objects.
+        """
+        if issubclass(permits.model, cls):
+            return (cls.objects.none(), 0)
+        with transaction.atomic():
+            originals = list(permits.order_by("pk"))
+            ids = [x.id for x in originals]
+            archived_at = timezone.now()
+            cls.objects.bulk_create([
+                cls(
+                    id=x.id,
+                    created_at=x.created_at,
+                    modified_at=x.modified_at,
+                    domain_id=x.domain_id,
+                    series_id=x.series_id,
+                    external_id=x.external_id,
+                    subjects=[
+                        {**s, "registration_number": ""} for s in x.subjects],
+                    areas=x.areas,
+                    properties=x.properties,
+                    archived_at=archived_at,
+                )
+                for x in originals
+            ])
+            Permit.objects.filter(id__in=ids).delete()
+        return (cls.objects.filter(id__in=ids), len(ids))
 
 
 class PermitSubjectItemQuerySet(AnonymizableRegNumQuerySet):

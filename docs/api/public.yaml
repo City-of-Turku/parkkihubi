@@ -476,7 +476,109 @@ paths:
                 items:
                   $ref: '#/definitions/ArchivedParkingAnonymized'
 
+  /archived_permit/:
+    get:
+      tags:
+        - archived_permit
+      summary: Get a list of anonymized archived permits
+      description: |
+        Fetch anonymized archived permits. Registration numbers,
+        addresses, ZIP codes, external ids and properties are not exposed.
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          description: Pagination page number
+        - name: page_size
+          in: query
+          type: integer
+          description: Pagination page size
+        - name: created_at__gte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived permits with created_at greater than or equal to the given datetime string.
+        - name: created_at__lte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived permits with created_at less than or equal to the given datetime string.
+        - name: archived_at__gte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived permits with archived_at greater than or equal to the given datetime string.
+        - name: archived_at__lte
+          in: query
+          type: string
+          format: date-time
+          description: Return archived permits with archived_at less than or equal to the given datetime string.
+      responses:
+        200:
+          description: |
+            An array of anonymized archived permits with metadata information
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total number of returned objects
+              next:
+                type: string
+                description: Next page URL
+              previous:
+                type: string
+                description: Previous page URL
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/ArchivedPermitAnonymized'
+
 definitions:
+  ArchivedPermitAnonymized:
+    type: object
+    properties:
+      id:
+        type: integer
+        readOnly: true
+      created_at:
+        type: string
+        format: date-time
+      modified_at:
+        type: string
+        format: date-time
+      domain:
+        type: integer
+      subjects:
+        description: Validity periods of the permit subjects
+        type: array
+        items:
+          type: object
+          properties:
+            start_time:
+              type: string
+              format: date-time
+            end_time:
+              type: string
+              format: date-time
+      areas:
+        type: array
+        items:
+          type: object
+          properties:
+            start_time:
+              type: string
+              format: date-time
+            end_time:
+              type: string
+              format: date-time
+            area:
+              description: Permit area identifier
+              type: string
+      archived_at:
+        type: string
+        format: date-time
+
   ArchivedParkingAnonymized:
     type: object
     properties:

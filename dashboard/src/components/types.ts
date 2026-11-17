@@ -18,6 +18,18 @@ geojson.Feature<geojson.MultiPolygon, RegionProperties> {
     id: string;
 }
 
+export interface PermitArea extends
+geojson.Feature<geojson.MultiPolygon, PermitAreaProperties> {
+    id: number;
+}
+
+export interface PermitAreaProperties {
+    identifier: string;
+    name: string;
+    areaKm2: number;
+    permitCount?: number;
+}
+
 export interface RegionProperties {
     name: string;
     capacityEstimate: number;

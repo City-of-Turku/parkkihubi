@@ -1,0 +1,147 @@
+openapi: 3.0.1
+info:
+  title: Parkkihubi Monitoring API
+  description:
+    $ref: ./description.md
+  version: "1.0.0"
+servers:
+  - url: https://parkki.turku.fi/monitoring/v1/
+    description: Production server
+  - url: http://localhost:8000/monitoring/v1/
+    description: Local development server
+tags:
+  - name: Regions
+    description: Parking regions and their usage statistics
+  - name: Permit Areas
+    description: Permit areas and their permit statistics
+  - name: Parkings
+    description: Currently valid parkings
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: |-
+        Requests must have value `ApiKey <your_api_key>` in the
+        `Authorization` header.  The Parkkihubi Dashboard uses session
+        authentication (Tunnistamo login) instead.
+
+        The authenticated user must have a Monitor object (added in the
+        admin site).  Monitors can only see data of the enforcement
+        domain they are assigned to.  Other users get `403 Forbidden`.
+  parameters:
+    time:
+      name: time
+      in: query
+      description: Time of interest.  Defaults to the current time.
+      schema:
+        type: string
+        format: date-time
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+  responses:
+    Forbidden:
+      description: User is not a monitor
+  schemas:
+    Paginated:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        previous:
+          type: string
+          format: uri
+          nullable: true
+security: [{ApiKey: []}]
+paths:
+  /region/:
+    get:
+      tags: [Regions]
+      summary: List parking regions
+      description: >-
+        Regions of the monitor's domain as a GeoJSON feature collection
+        in WGS84.  Properties: `name`, `capacity_estimate`, `area_km2`,
+        `spots_per_km2` and `parking_areas`.
+      responses:
+        '200': {description: A paginated GeoJSON feature collection}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /region_statistics/:
+    get:
+      tags: [Regions]
+      summary: Number of valid parkings in each region
+      description: >-
+        Returns `id` and `parking_count` for regions that have valid
+        parkings at the given time.
+      parameters:
+        - $ref: '#/components/parameters/time'
+      responses:
+        '200': {description: A paginated list of region statistics}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /permit_area/:
+    get:
+      tags: [Permit Areas]
+      summary: List permit areas
+      description: >-
+        Permit areas of the monitor's domain as a GeoJSON feature
+        collection in WGS84.  Feature `id` is the numeric id of the area
+        and properties are `identifier`, `name` and `area_km2`.
+      responses:
+        '200': {description: A paginated GeoJSON feature collection}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /permit_area_statistics/:
+    get:
+      tags: [Permit Areas]
+      summary: Number of valid permits in each permit area
+      description: >-
+        Returns `id` and `permit_count` for every permit area of the
+        monitor's domain.  Only permits of the active permit series
+        which are valid at the given time are counted, and each permit
+        is counted once per area regardless of the number of vehicles.
+        No registration numbers are exposed.
+      parameters:
+        - $ref: '#/components/parameters/time'
+      responses:
+        '200': {description: A paginated list of permit area statistics}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /valid_parking/:
+    get:
+      tags: [Parkings]
+      summary: List valid parkings
+      description: Parkings of the monitor's domain valid at the given time.
+      parameters:
+        - name: time
+          in: query
+          required: true
+          schema: {type: string, format: date-time}
+        - name: region
+          in: query
+          schema: {type: string, format: uuid}
+        - name: zone
+          in: query
+          schema: {type: integer}
+      responses:
+        '200': {description: A paginated GeoJSON feature collection}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /valid_event_parking/:
+    get:
+      tags: [Parkings]
+      summary: List valid event parkings
+      description: >-
+        Event parkings valid at the given time, restricted to the event
+        areas assigned to the monitor's domain.
+      parameters:
+        - name: time
+          in: query
+          required: true
+          schema: {type: string, format: date-time}
+      responses:
+        '200': {description: A paginated GeoJSON feature collection}
+        '403': {$ref: '#/components/responses/Forbidden'}

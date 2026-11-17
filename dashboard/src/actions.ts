@@ -1,7 +1,10 @@
 import { Moment } from 'moment';
 
-import { ParkingList, RegionList, RegionStatsList } from './api/types';
+import {
+    ParkingList, PermitAreaList, PermitAreaStatsList, RegionList,
+    RegionStatsList } from './api/types';
 import { MapViewport } from './components/types';
+import { DashboardTab } from './types';
 
 interface CheckExistingLoginAction {
     type: 'CHECK_EXISTING_LOGIN';
@@ -139,6 +142,36 @@ export function receiveValidParkings(
     return {type: 'RECEIVE_VALID_PARKINGS', data, time};
 }
 
+interface SetActiveTabAction {
+    type: 'SET_ACTIVE_TAB';
+    tab: DashboardTab;
+}
+export function setActiveTab(tab: DashboardTab): SetActiveTabAction {
+    return {type: 'SET_ACTIVE_TAB', tab};
+}
+
+interface ReceivePermitAreasAction {
+    type: 'RECEIVE_PERMIT_AREAS';
+    data: PermitAreaList;
+}
+export function receivePermitAreas(
+    data: PermitAreaList
+): ReceivePermitAreasAction {
+    return {type: 'RECEIVE_PERMIT_AREAS', data};
+}
+
+interface ReceivePermitAreaStatsAction {
+    type: 'RECEIVE_PERMIT_AREA_STATS';
+    data: PermitAreaStatsList;
+    time: Moment;
+}
+export function receivePermitAreaStats(
+    data: PermitAreaStatsList,
+    time: Moment,
+): ReceivePermitAreaStatsAction {
+    return {type: 'RECEIVE_PERMIT_AREA_STATS', data, time};
+}
+
 export type Action =
     CheckExistingLoginAction |
     ResolveExistingLoginCheckAction |
@@ -155,4 +188,7 @@ export type Action =
     SetSelectedRegionAction |
     ReceiveRegionStatsAction |
     ReceiveRegionInfoAction |
-    ReceiveValidParkingsAction;
+    ReceiveValidParkingsAction |
+    SetActiveTabAction |
+    ReceivePermitAreasAction |
+    ReceivePermitAreaStatsAction;
