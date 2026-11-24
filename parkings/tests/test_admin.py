@@ -62,11 +62,12 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
         )
 
     def test_location_rendered_as_map(self):
-        assert '<div id="id_location_map" dir="ltr">' in self.response_text
-        assert "OpenLayers.Map('id_location_map'" in self.response_text
+        assert 'id="id_location_map"' in self.response_text
+        assert 'new ol.source.XYZ' in self.response_text
+        assert 'maptiles' in self.response_text
 
     def test_location_not_modifiable(self):
-        assert 'geodjango_location.modifiable = false;' in self.response_text
+        assert 'disabled' in self.response_text
 
 
 class TestPermitListAdmin(ListAdminTestCase):

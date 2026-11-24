@@ -206,6 +206,23 @@ TEMPLATES = [
     },
 ]
 
+#############
+# Map tiles #
+#############
+# Tile URL template used by the admin maps (XYZ, no retina "{r}" suffix)
+MAPTILES_URL = env.str(
+    'MAPTILES_URL',
+    default=(
+        'https://maptiles-testi.turku.fi/styles/hel-osm-bright/{z}/{x}/{y}.png'
+        if TIER != 'prod' else
+        'https://maptiles.turku.fi/styles/hel-osm-bright/{z}/{x}/{y}.png'))
+MAPTILES_ATTRIBUTION = env.str(
+    'MAPTILES_ATTRIBUTION',
+    default=(
+        'Pohjakartta © Turun kaupunki, käyttölupa CC BY 4.0 | '
+        '© <a href="http://osm.org/copyright" target="_blank" '
+        'rel="noopener noreferrer">OpenStreetMapin tekijät</a>'))
+
 ##########
 # Sentry #
 ##########

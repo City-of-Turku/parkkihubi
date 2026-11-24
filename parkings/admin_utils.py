@@ -1,7 +1,27 @@
 import csv
 
+from django.conf import settings
 from django.contrib import admin
+from django.contrib.gis.admin import GISModelAdmin
+from django.contrib.gis.forms.widgets import OSMWidget
 from django.http import HttpResponse
+
+
+class TurkuMapWidget(OSMWidget):
+    """OpenLayers map widget using the Turku map tile service."""
+
+    template_name = 'gis/openlayers-turku.html'
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context['widget']['maptiles_url'] = settings.MAPTILES_URL
+        context['widget']['maptiles_attribution'] = (
+            settings.MAPTILES_ATTRIBUTION)
+        return context
+
+
+class TurkuGISModelAdmin(GISModelAdmin):
+    gis_widget = TurkuMapWidget
 
 
 class ReadOnlyAdmin(admin.ModelAdmin):
