@@ -1,6 +1,8 @@
 from datetime import timedelta
+from unittest import mock
 
 import pytest
+from django.contrib.gis.gdal import GDALException
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.urls import reverse
 from django.utils import timezone
@@ -107,3 +109,15 @@ def test_permit_area_with_degrees_in_gk25_srid_is_used_as_wgs84(monitoring_api_c
     assert result.status_code == status.HTTP_200_OK
     coords = result.data['features'][0]['geometry']['coordinates']
     assert coords[0][0][0] == [22.2, 60.4]
+
+
+def test_permit_area_with_untransformable_geometry_has_null_geometry(monitoring_api_client):
+    domain = monitoring_api_client.monitor.domain
+    _make_area(domain, 'A')
+
+    with mock.patch(
+            'django.contrib.gis.geos.GEOSGeometry.transform',
+            side_effect=GDALException):
+        result = monitoring_api_client.get(list_url)
+    assert result.status_code == status.HTTP_200_OK
+    assert result.data['features'][0]['geometry'] is None

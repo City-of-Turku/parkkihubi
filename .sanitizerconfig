@@ -82,6 +82,17 @@ strategy:
     time_start: null
     zone_id: null
     location_gk25fin: null
+  parkings_archivedpermit:
+    archived_at: null
+    areas: null
+    created_at: null
+    domain_id: null
+    external_id: null
+    id: null
+    modified_at: null
+    properties: null
+    series_id: null
+    subjects: parkkihubi.permit_subjects
   parkings_enforcementdomain:
     code: null
     created_at: null
