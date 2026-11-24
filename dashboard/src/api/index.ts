@@ -2,7 +2,9 @@ import * as axios from 'axios';
 import { Moment } from 'moment';
 
 import AuthManager from './auth-manager';
-import { ParkingList, RegionList, RegionStatsList } from './types';
+import {
+    ParkingList, PermitAreaList, PermitAreaStatsList, RegionList,
+    RegionStatsList } from './types';
 
 interface SuccessCallback<T> {
     (response: axios.AxiosResponse<T>): void;
@@ -19,6 +21,8 @@ export class Api {
         regions: '/monitoring/v1/region/',
         regionStats: '/monitoring/v1/region_statistics/',
         validParkings: '/monitoring/v1/valid_parking/',
+        permitAreas: '/monitoring/v1/permit_area/',
+        permitAreaStats: '/monitoring/v1/permit_area_statistics/',
     };
 
     public auth: AuthManager;
@@ -66,9 +70,28 @@ export class Api {
                             callback, errorHandler);
     }
 
+    fetchPermitAreas(
+        callback: SuccessCallback<PermitAreaList>,
+        errorHandler: ErrorHandler
+    ) {
+        this._fetchAllPages(this.endpoints.permitAreas, callback, errorHandler);
+    }
+
+    fetchPermitAreaStats(
+        time: Moment,
+        callback: SuccessCallback<PermitAreaStatsList>,
+        errorHandler: ErrorHandler
+    ) {
+        const timeParam = (time) ? '?time=' + time.toISOString() : '';
+        this._fetchAllPages(this.endpoints.permitAreaStats + timeParam,
+                            callback, errorHandler);
+    }
+
     private _fetchAllPages(
         url: string,
-        callback: SuccessCallback<RegionList> | SuccessCallback<ParkingList> | SuccessCallback<RegionStatsList>,
+        callback: SuccessCallback<RegionList> | SuccessCallback<ParkingList>
+            | SuccessCallback<RegionStatsList> | SuccessCallback<PermitAreaList>
+            | SuccessCallback<PermitAreaStatsList>,
         errorHandler: ErrorHandler
     ) {
         this.axios.get(url, { withCredentials: true })

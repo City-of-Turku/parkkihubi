@@ -1,9 +1,10 @@
 import * as geojson from 'geojson';
 
-import { Region, MapViewport } from './components/types';
+import { Region, MapViewport, PermitArea } from './components/types';
 
 export type ParkingId = string;
 export type Timestamp = number;  // milliseconds since Epoch
+export type DashboardTab = 'parkings' | 'permits';
 
 export interface RootState {
     auth: AuthenticationState;
@@ -13,11 +14,16 @@ export interface RootState {
     dataTime: Timestamp|null; // milliseconds
     autoUpdate: boolean;
 
+    activeTab: DashboardTab;
+
     selectedRegion: string|null;  // regionId
 
     regions: RegionsMap;
 
     parkings: ParkingsMap;
+
+    permitAreas: PermitAreasMap;
+    permitCountHistory: PermitCountHistory;
 
     regionUsageHistory: RegionUsageHistory;
     validParkingsHistory: ValidParkingsHistory;
@@ -84,4 +90,12 @@ export interface RegionUsageInfo {
 
 export interface ValidParkingsHistory {
     [time: number]: ParkingId[];
+}
+
+export interface PermitAreasMap {
+    [areaId: number]: PermitArea;
+}
+
+export interface PermitCountHistory {
+    [time: number]: {[areaId: number]: number};
 }

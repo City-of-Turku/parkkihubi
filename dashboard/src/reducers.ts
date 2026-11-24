@@ -5,7 +5,8 @@ import { Action } from './actions';
 import { centerCoordinates } from './config';
 import * as conv from './converters';
 import {
-    AuthenticationState, ParkingRegionMapState, ParkingsMap, RegionsMap,
+    AuthenticationState, DashboardTab, ParkingRegionMapState, ParkingsMap,
+    PermitAreasMap, PermitCountHistory, RegionsMap,
     RegionUsageHistory, ValidParkingsHistory,
     ViewState } from './types';
 
@@ -130,6 +131,8 @@ function dataTime(state: number|null = null, action: Action) {
 }
 
 const autoUpdate = makeReducer<boolean>('SET_AUTO_UPDATE', 'value', true);
+const activeTab = makeReducer<DashboardTab>(
+    'SET_ACTIVE_TAB', 'tab', 'parkings');
 const selectedRegion = makeReducer<string|null>(
     'SET_SELECTED_REGION', 'regionId', null);
 
@@ -138,6 +141,31 @@ function regions(state: RegionsMap = {}, action: Action): RegionsMap {
         const newRegions = mapByIdAndApply(
             action.data.features, conv.convertRegion as any);
         return {...state, ...newRegions} as RegionsMap;
+    }
+    return state;
+}
+
+function permitAreas(
+    state: PermitAreasMap = {},
+    action: Action
+): PermitAreasMap {
+    if (action.type === 'RECEIVE_PERMIT_AREAS') {
+        const newAreas = mapByIdAndApply(
+            action.data.features as any, conv.convertPermitArea as any);
+        return {...state, ...newAreas} as PermitAreasMap;
+    }
+    return state;
+}
+
+function permitCountHistory(
+    state: PermitCountHistory = {},
+    action: Action
+): PermitCountHistory {
+    if (action.type === 'RECEIVE_PERMIT_AREA_STATS') {
+        const timestamp = action.time.valueOf();
+        const counts = _.assign({}, ...action.data.results.map(
+            (x) => ({[x.id]: x.permit_count})));
+        return {...state, [timestamp]: {...state[timestamp], ...counts}};
     }
     return state;
 }
@@ -197,8 +225,11 @@ const rootReducer  = () => combineReducers({
         views,
         dataTime,
         autoUpdate,
+        activeTab,
         selectedRegion,
         regions,
+        permitAreas,
+        permitCountHistory,
         parkings,
         regionUsageHistory,
         validParkingsHistory,

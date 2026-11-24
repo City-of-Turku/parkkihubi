@@ -9,14 +9,15 @@ from .parking_area import ParkingArea
 from .parking_check import ParkingCheck
 from .parking_terminal import ParkingTerminal
 from .permit import (
-    Permit, PermitArea, PermitAreaItem, PermitLookupItem, PermitSeries,
-    PermitSubjectItem)
+    ArchivedPermit, Permit, PermitArea, PermitAreaItem, PermitLookupItem,
+    PermitSeries, PermitSubjectItem)
 from .permit_check import PermitCheck
 from .region import Region
 from .zone import PaymentZone
 
 __all__ = [
     'ArchivedParking',
+    'ArchivedPermit',
     'DataUser',
     'EnforcementDomain',
     'Enforcer',

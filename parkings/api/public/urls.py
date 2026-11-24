@@ -3,6 +3,7 @@ from rest_framework.routers import APIRootView, DefaultRouter
 
 from ..url_utils import versioned_url
 from .archived_parking import PublicAPIArchivedParkingViewSet
+from .archived_permit import PublicAPIArchivedPermitViewSet
 from .event_area import PublicAPIEventAreaViewSet
 from .event_area_statistics import PublicAPIEventAreaStatisticsViewSet
 from .event_area_total_statistics import (
@@ -23,6 +24,9 @@ router = Router()
 router.register(
     r'archived_parking',
     PublicAPIArchivedParkingViewSet, basename='archivedparking')
+router.register(
+    r'archived_permit',
+    PublicAPIArchivedPermitViewSet, basename='archivedpermit')
 router.register(
     r'event_area',
     PublicAPIEventAreaViewSet, basename='eventarea')

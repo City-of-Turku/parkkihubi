@@ -1,23 +1,32 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { Button } from 'react-bootstrap';
+import { Button, ButtonGroup } from 'react-bootstrap';
 
 import RegionSelector from './RegionSelector';
 import * as dispatchers from '../dispatchers';
-import { RootState } from '../types';
+import { DashboardTab, RootState } from '../types';
 
 import './Dashboard.css';
 import TimeSelect from '../containers/TimeSelect';
 import ParkingRegionsMap from './ParkingRegionsMap';
 import LastParkingsTable from './LastParkingsTable';
+import PermitAreasMap from './PermitAreasMap';
+import PermitAreasTable from './PermitAreasTable';
 
 interface Props {
     autoUpdate?: boolean;
+    activeTab?: DashboardTab;
+    onTabChange?: (tab: DashboardTab) => void;
     onUpdate?: () => void;
     onLogout?: () => void;
 }
 
+
+const tabs: Array<[DashboardTab, string]> = [
+    ['parkings', 'Aktiiviset pysäköinnit'],
+    ['permits', 'Lupapysäköinnit'],
+];
 
 class Dashboard extends Component<Props> {
     timer: number|null = null;
@@ -62,6 +71,7 @@ class Dashboard extends Component<Props> {
     }
 
     render() {
+      const activeTab = this.props.activeTab || 'parkings';
       return (
         <main className="main d-flex flex-column">
             <div className="toolbar margin-bottom-8">
@@ -78,20 +88,36 @@ class Dashboard extends Component<Props> {
                   <i className="fa fa-sign-out" />
               </Button>
             </div>
-            <h4>Aktiiviset pysäköinnit</h4>
+            <ButtonGroup className="margin-bottom-8">
+              {tabs.map(([tab, label]) => (
+                <Button
+                    key={tab}
+                    variant={activeTab === tab ? 'primary' : 'outline-primary'}
+                    onClick={() => this.props.onTabChange?.(tab)}
+                >
+                    {label}
+                </Button>
+              ))}
+            </ButtonGroup>
             <div className="d-flex">
                 <div className="table-card">
                     <TimeSelect />
                     <div className="margin-bottom-8" />
-                    <LastParkingsTable />
+                    {activeTab === 'permits'
+                        ? <PermitAreasTable />
+                        : <LastParkingsTable />}
                 </div>
 
                 <div style={{width: '16px'}}/>
 
                 <div className="map-card">
-                    <RegionSelector />
-                    <div className="margin-bottom-8" />
-                    <ParkingRegionsMap/>
+                    {activeTab === 'permits' ? <PermitAreasMap /> : (
+                      <>
+                        <RegionSelector />
+                        <div className="margin-bottom-8" />
+                        <ParkingRegionsMap/>
+                      </>
+                    )}
                 </div>
             </div>
         </main>
@@ -101,11 +127,13 @@ class Dashboard extends Component<Props> {
 
 const mapStateToProps = (state: RootState): Props => ({
   autoUpdate: state.autoUpdate,
+  activeTab: state.activeTab,
 });
 
 const mapDispatchToProps = (dispatch: any): Props => ({
   onUpdate: () => dispatch(dispatchers.updateData()),
   onLogout: () => dispatch(dispatchers.logout()),
+  onTabChange: (tab: DashboardTab) => dispatch(dispatchers.setActiveTab(tab)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

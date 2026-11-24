@@ -1,6 +1,8 @@
 from rest_framework.routers import DefaultRouter
 
 from ..url_utils import versioned_url
+from .permit_area import PermitAreaViewSet
+from .permit_area_statistics import PermitAreaStatisticsViewSet
 from .region import RegionViewSet
 from .region_statistics import RegionStatisticsViewSet
 from .valid_event_parking import ValidEventParkingViewSet
@@ -10,6 +12,9 @@ router = DefaultRouter()
 router.register(r'region', RegionViewSet, basename='region')
 router.register(r'region_statistics', RegionStatisticsViewSet,
                 basename='regionstatistics')
+router.register(r'permit_area', PermitAreaViewSet, basename='permitarea')
+router.register(r'permit_area_statistics', PermitAreaStatisticsViewSet,
+                basename='permitareastatistics')
 router.register(r'valid_parking', ValidParkingViewSet,
                 basename='valid_parking')
 router.register(r'valid_event_parking', ValidEventParkingViewSet,
