@@ -3,13 +3,9 @@ import * as geojson from 'geojson';
 import * as Leaflet from 'leaflet';
 import { MapViewport, Point, Region, RegionProperties } from './types';
 
+import BaseMapLayers from './BaseMapLayers';
 import './ParkingRegionsMap.css';
-import {
-    TileLayer,
-    MapContainer,
-    GeoJSON,
-    ScaleControl,
-} from 'react-leaflet';
+import { MapContainer, GeoJSON } from 'react-leaflet';
 
 export interface Props {
     center: Point;
@@ -31,19 +27,10 @@ export default function ParkingRegionsMap(props: Props) {
             ) => bindPopupToRegion(region, layer, props)}
         />
     ) : null;
-    const osmAttribution = (
-        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
-        + ' contributors');
     return (
         <MapContainer center={props.center}
                       zoom={props.zoom}>
-            <TileLayer
-                attribution={osmAttribution}
-                url="//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <ScaleControl metric={true}
-                          imperial={false}
-                          maxWidth={150}/>
+            <BaseMapLayers />
             {geoJsonElement}
         </MapContainer>
     );

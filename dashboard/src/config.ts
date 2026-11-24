@@ -9,6 +9,11 @@ export const apiBaseUrl: string = import.meta.env.VITE_API_URL || (
             ? 'https://testiparkki.turku.fi/'
             : 'https://parkki.turku.fi/');
 
+export const mapTilesUrl: string = import.meta.env.VITE_MAPTILES_URL || (
+    (isDev || window.location.href.includes('test'))
+        ? 'https://maptiles-testi.turku.fi/styles/hel-osm-bright/{z}/{x}/{y}{r}.png'
+        : 'https://maptiles.turku.fi/styles/hel-osm-bright/{z}/{x}/{y}{r}.png');
+
 let mapPoint: Point;
 if (typeof import.meta.env.VITE_API_CENTER !== 'undefined') {
     const envPoint = import.meta.env.VITE_API_CENTER!.split(',').map(Number);

@@ -196,6 +196,7 @@ Three possible ways (out of many) to generate the documentation:
 
       bootprint openapi docs/api/enforcement.yaml </output/path/enforcement/>
       bootprint openapi docs/api/operator.yaml </output/path/operator/>
+      bootprint openapi docs/api/monitoring.yaml </output/path/monitoring/>
 
 - [swagger-codegen](https://github.com/swagger-api/swagger-codegen)
 

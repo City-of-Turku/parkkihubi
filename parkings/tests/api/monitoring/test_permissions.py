@@ -31,7 +31,8 @@ def _get_api_client(api_user, monitoring_api_client, enforcer_api_client,
 )
 @pytest.mark.parametrize(
     'endpoint',
-    ['valid_parking-list', 'region-list', 'regionstatistics-list']
+    ['valid_parking-list', 'region-list', 'regionstatistics-list',
+     'permitarea-list', 'permitareastatistics-list']
 )
 def test_get_monitor_api_permission(
     api_user, monitoring_api_client, enforcer_api_client, operator_api_client,

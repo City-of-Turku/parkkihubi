@@ -2,7 +2,7 @@
 
 ## Different APIs
 
-Parkkihubi has four different REST APIs:
+Parkkihubi has five different REST APIs:
 
 * [Operator API](../operator/)
 
@@ -28,10 +28,11 @@ Parkkihubi has four different REST APIs:
 * [Data API](../data/)
   Data API can be used to fetch anonymized parkings, archived parkings, event parkings and parking checks.
 
-* Monitoring API
+* [Monitoring API](../monitoring/)
 
   Monitoring API can be used to monitor the status of the Parkkihubi.
   The API is designed to be used by the Parkkihubi Dashboard.
+  It requires an authenticated user with a Monitor object.
 
 ## Object Model
 

@@ -8,10 +8,10 @@ from django.urls import path
 from .admin_utils import (
     ReadOnlyAdmin, TurkuGISModelAdmin, WithAreaField, export_as_csv)
 from .models import (
-    ArchivedParking, DataUser, EnforcementDomain, Enforcer, EventArea,
-    EventAreaStatistics, EventParking, Monitor, Operator, Parking, ParkingArea,
-    ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
-    PermitCheck, PermitLookupItem, PermitSeries, Region)
+    ArchivedParking, ArchivedPermit, DataUser, EnforcementDomain, Enforcer,
+    EventArea, EventAreaStatistics, EventParking, Monitor, Operator, Parking,
+    ParkingArea, ParkingCheck, ParkingTerminal, PaymentZone, Permit,
+    PermitArea, PermitCheck, PermitLookupItem, PermitSeries, Region)
 from .models.constants import PERMIT_TYPES
 
 # Unregister helusers AD group models from admin to hide "Helsinki Users" section
@@ -225,6 +225,18 @@ class PermitAdmin(admin.ModelAdmin):
 
     def item_count(self, instance):
         return instance.item_count
+
+
+@admin.register(ArchivedPermit)
+class ArchivedPermitAdmin(ReadOnlyAdmin):
+    date_hierarchy = 'created_at'
+    list_display = [
+        'id', 'domain', 'series', 'external_id',
+        'created_at', 'modified_at', 'archived_at']
+    list_filter = ['domain', 'series__owner', 'series__type']
+    ordering = ('-archived_at', '-id')
+    actions = [export_as_csv]
+    exclude_csv_fields = ['subjects']
 
 
 @admin.register(PermitArea)
