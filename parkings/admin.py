@@ -173,8 +173,25 @@ class EventAreaStatisticsAdmin(admin.ModelAdmin):
         return False
 
 
+class ReadOnlyCheckAdmin(ReadOnlyAdmin, TurkuGISModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # Keep the location in the form so its map widget is rendered.
+        fields = super().get_readonly_fields(request, obj)
+        return [field for field in fields if field != 'location']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'location' in form.base_fields:
+            form.base_fields['location'].disabled = True
+        return form
+
+    def has_change_permission(self, request, obj=None):
+        # Needed to make the map visible for the location field.
+        return True
+
+
 @admin.register(ParkingCheck)
-class ParkingCheckAdmin(ReadOnlyAdmin, TurkuGISModelAdmin):
+class ParkingCheckAdmin(ReadOnlyCheckAdmin):
     list_display = [
         'id', 'time', 'registration_number', 'location',
         'allowed', 'result', 'performer', 'created_at',
@@ -182,20 +199,6 @@ class ParkingCheckAdmin(ReadOnlyAdmin, TurkuGISModelAdmin):
     ]
     list_filter = ['time']
     actions = [export_as_csv]
-
-    modifiable = False
-
-    def get_readonly_fields(self, request, obj=None):
-        # Remove location from readonly fields, because otherwise the
-        # map won't be rendered at all.  The class level
-        # "modifiable=False" will take care of not allowing the location
-        # to be modified.
-        fields = super().get_readonly_fields(request, obj)
-        return [x for x in fields if x != 'location']
-
-    def has_change_permission(self, request, obj=None):
-        # Needed to make the map visible for the location field
-        return True
 
 
 @admin.register(ParkingTerminal)
@@ -317,7 +320,7 @@ class PermitSeriesAdmin(admin.ModelAdmin):
 
 
 @admin.register(PermitCheck)
-class PermitCheckAdmin(ReadOnlyAdmin, TurkuGISModelAdmin):
+class PermitCheckAdmin(ReadOnlyCheckAdmin):
     list_display = [
         'id', 'time', 'registration_number', 'location',
         'allowed', 'result', 'performer', 'created_at',
@@ -325,17 +328,3 @@ class PermitCheckAdmin(ReadOnlyAdmin, TurkuGISModelAdmin):
     ]
     list_filter = ['time']
     actions = [export_as_csv]
-
-    modifiable = False
-
-    def get_readonly_fields(self, request, obj=None):
-        # Remove location from readonly fields, because otherwise the
-        # map won't be rendered at all.  The class level
-        # "modifiable=False" will take care of not allowing the location
-        # to be modified.
-        fields = super().get_readonly_fields(request, obj)
-        return [x for x in fields if x != 'location']
-
-    def has_change_permission(self, request, obj=None):
-        # Needed to make the map visible for the location field
-        return True

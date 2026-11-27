@@ -8,3 +8,12 @@ var base_layer = new ol.layer.Tile({
   })
 });
 {% endblock %}
+{% block options %}
+{{ block.super }}
+{% if disabled %}
+document.addEventListener('DOMContentLoaded', function () {
+  {{ module }}.interactions.draw.setActive(false);
+  {{ module }}.interactions.modify.setActive(false);
+});
+{% endif %}
+{% endblock %}
