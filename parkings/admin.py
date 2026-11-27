@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib import admin
-from django.contrib.gis.admin import OSMGeoAdmin
 from django.db import models
 from django.db.models import Count
 from django.http import JsonResponse
 from django.urls import path
 
-from .admin_utils import ReadOnlyAdmin, WithAreaField, export_as_csv
+from .admin_utils import (
+    ReadOnlyAdmin, TurkuGISModelAdmin, WithAreaField, export_as_csv)
 from .models import (
     ArchivedParking, ArchivedPermit, DataUser, EnforcementDomain, Enforcer,
     EventArea, EventAreaStatistics, EventParking, Monitor, Operator, Parking,
@@ -27,13 +27,13 @@ except (ImportError, AttributeError):
 
 
 @admin.register(Enforcer)
-class EnforcerAdmin(WithAreaField, OSMGeoAdmin):
+class EnforcerAdmin(WithAreaField, TurkuGISModelAdmin):
     list_display = ['id', 'name', 'user', 'enforced_domain']
     ordering = ('name',)
 
 
 @admin.register(EnforcementDomain)
-class EnforcementDomainAdmin(WithAreaField, OSMGeoAdmin):
+class EnforcementDomainAdmin(WithAreaField, TurkuGISModelAdmin):
     list_display = ['id', 'code', 'name', 'area']
     ordering = ('code',)
 
@@ -55,14 +55,14 @@ class OperatorAdmin(admin.ModelAdmin):
 
 
 @admin.register(PaymentZone)
-class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
+class PaymentZoneAdmin(WithAreaField, TurkuGISModelAdmin):
     list_display = ['id', 'domain', 'number', 'name', 'area']
     list_filter = ['domain']
     ordering = ('number',)
 
 
 @admin.register(Parking, ArchivedParking)
-class ParkingAdmin(OSMGeoAdmin):
+class ParkingAdmin(TurkuGISModelAdmin):
     date_hierarchy = 'time_start'
     list_display = [
         'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
@@ -77,14 +77,14 @@ class ParkingAdmin(OSMGeoAdmin):
 
 
 @admin.register(Region)
-class RegionAdmin(WithAreaField, OSMGeoAdmin):
+class RegionAdmin(WithAreaField, TurkuGISModelAdmin):
     list_display = ['id', 'domain', 'name', 'capacity_estimate', 'area']
     list_filter = ['domain']
     ordering = ('name',)
 
 
 @admin.register(ParkingArea)
-class ParkingAreaAdmin(WithAreaField, OSMGeoAdmin):
+class ParkingAreaAdmin(WithAreaField, TurkuGISModelAdmin):
     area_scale = 1
     list_display = ['id', 'origin_id', 'domain', 'capacity_estimate', 'area']
     list_filter = ['domain']
@@ -105,7 +105,7 @@ class EventAreaForm(forms.ModelForm):
 
 
 @admin.register(EventArea)
-class EventAreaAdmin(WithAreaField, OSMGeoAdmin):
+class EventAreaAdmin(WithAreaField, TurkuGISModelAdmin):
     form = EventAreaForm
     area_scale = 1
     list_display = ['id', 'is_active', 'is_test', 'origin_id', 'domain', 'time_start', 'time_end',
@@ -135,7 +135,7 @@ class EventAreaAdmin(WithAreaField, OSMGeoAdmin):
 
 
 @admin.register(EventParking)
-class EventParkingAdmin(OSMGeoAdmin):
+class EventParkingAdmin(TurkuGISModelAdmin):
     date_hierarchy = 'time_start'
     list_display = [
         'id', 'operator', 'domain', 'event_area',
@@ -173,8 +173,25 @@ class EventAreaStatisticsAdmin(admin.ModelAdmin):
         return False
 
 
+class ReadOnlyCheckAdmin(ReadOnlyAdmin, TurkuGISModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # Keep the location in the form so its map widget is rendered.
+        fields = super().get_readonly_fields(request, obj)
+        return [field for field in fields if field != 'location']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if 'location' in form.base_fields:
+            form.base_fields['location'].disabled = True
+        return form
+
+    def has_change_permission(self, request, obj=None):
+        # Needed to make the map visible for the location field.
+        return True
+
+
 @admin.register(ParkingCheck)
-class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+class ParkingCheckAdmin(ReadOnlyCheckAdmin):
     list_display = [
         'id', 'time', 'registration_number', 'location',
         'allowed', 'result', 'performer', 'created_at',
@@ -183,23 +200,9 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
     list_filter = ['time']
     actions = [export_as_csv]
 
-    modifiable = False
-
-    def get_readonly_fields(self, request, obj=None):
-        # Remove location from readonly fields, because otherwise the
-        # map won't be rendered at all.  The class level
-        # "modifiable=False" will take care of not allowing the location
-        # to be modified.
-        fields = super().get_readonly_fields(request, obj)
-        return [x for x in fields if x != 'location']
-
-    def has_change_permission(self, request, obj=None):
-        # Needed to make the map visible for the location field
-        return True
-
 
 @admin.register(ParkingTerminal)
-class ParkingTerminalAdmin(OSMGeoAdmin):
+class ParkingTerminalAdmin(TurkuGISModelAdmin):
     list_display = ['id', 'domain', 'number', 'name']
     list_filter = ['domain']
 
@@ -240,7 +243,7 @@ class ArchivedPermitAdmin(ReadOnlyAdmin):
 
 
 @admin.register(PermitArea)
-class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
+class PermitAreaAdmin(WithAreaField, TurkuGISModelAdmin):
     list_display = ['id', 'domain', 'identifier', 'name', 'area']
     list_filter = ['domain']
     ordering = ('identifier',)
@@ -317,7 +320,7 @@ class PermitSeriesAdmin(admin.ModelAdmin):
 
 
 @admin.register(PermitCheck)
-class PermitCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+class PermitCheckAdmin(ReadOnlyCheckAdmin):
     list_display = [
         'id', 'time', 'registration_number', 'location',
         'allowed', 'result', 'performer', 'created_at',
@@ -325,17 +328,3 @@ class PermitCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
     ]
     list_filter = ['time']
     actions = [export_as_csv]
-
-    modifiable = False
-
-    def get_readonly_fields(self, request, obj=None):
-        # Remove location from readonly fields, because otherwise the
-        # map won't be rendered at all.  The class level
-        # "modifiable=False" will take care of not allowing the location
-        # to be modified.
-        fields = super().get_readonly_fields(request, obj)
-        return [x for x in fields if x != 'location']
-
-    def has_change_permission(self, request, obj=None):
-        # Needed to make the map visible for the location field
-        return True

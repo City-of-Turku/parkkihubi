@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 
 from ..factories.permit import create_permit, create_permit_series
-from ..models import ParkingCheck
+from ..models import ParkingCheck, PermitCheck
 
 
 class AdminTestCase(TestCase):
@@ -48,7 +48,30 @@ class ObjAdminTestCase(AdminTestCase):
     kind = 'change'
 
 
-class TestParkingCheckAdmin(ObjAdminTestCase):
+class CheckAdminTests:
+    def test_location_rendered_as_map(self):
+        assert 'id="id_location_map"' in self.response_text
+        assert 'new ol.source.XYZ' in self.response_text
+        assert 'maptiles' in self.response_text
+
+    def test_location_not_modifiable(self):
+        assert self.response.context['adminform'].form.fields['location'].disabled
+        assert 'class="clear_features"' not in self.response_text
+        assert 'geodjango_location.interactions.draw.setActive(false)' in self.response_text
+        assert 'geodjango_location.interactions.modify.setActive(false)' in self.response_text
+
+    def test_submitted_location_is_ignored(self):
+        original_location = self.obj.location.clone()
+        response = self.client.post(self.url, {
+            'location': 'POINT (0 0)',
+            '_save': 'Save',
+        })
+        assert response.status_code == 302
+        self.obj.refresh_from_db()
+        assert self.obj.location == original_location
+
+
+class TestParkingCheckAdmin(CheckAdminTests, ObjAdminTestCase):
     def create_object(self):
         return ParkingCheck.objects.create(
             performer=self.user,
@@ -61,12 +84,19 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
             found_parking=None,
         )
 
-    def test_location_rendered_as_map(self):
-        assert '<div id="id_location_map" dir="ltr">' in self.response_text
-        assert "OpenLayers.Map('id_location_map'" in self.response_text
 
-    def test_location_not_modifiable(self):
-        assert 'geodjango_location.modifiable = false;' in self.response_text
+class TestPermitCheckAdmin(CheckAdminTests, ObjAdminTestCase):
+    def create_object(self):
+        return PermitCheck.objects.create(
+            performer=self.user,
+            time='2019-01-01T12:00:00Z',
+            time_overridden=True,
+            registration_number='ABC-123',
+            location=Point(60.193609, 24.951394),
+            result={},
+            allowed=False,
+            found_permit=None,
+        )
 
 
 class TestPermitListAdmin(ListAdminTestCase):

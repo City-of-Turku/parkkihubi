@@ -7,8 +7,18 @@ from django.contrib import admin
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.test import RequestFactory
 
-from parkings.admin_utils import ReadOnlyAdmin, WithAreaField, export_as_csv
+from parkings.admin_utils import (
+    ReadOnlyAdmin, TurkuMapWidget, WithAreaField, export_as_csv)
 from parkings.models import EnforcementDomain
+
+
+def test_turku_map_widget_remains_editable():
+    html = TurkuMapWidget(attrs={'geom_type': 'POINT'}).render(
+        'location', None, attrs={'id': 'id_location'})
+
+    assert 'class="clear_features"' in html
+    assert '.interactions.draw.setActive(false)' not in html
+    assert '.interactions.modify.setActive(false)' not in html
 
 
 @pytest.mark.django_db

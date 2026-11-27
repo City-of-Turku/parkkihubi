@@ -1,0 +1,19 @@
+{% extends "gis/openlayers.html" %}
+{% block base_layer %}
+var base_layer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    url: '{{ widget.maptiles_url|escapejs }}',
+    attributions: '{{ widget.maptiles_attribution|escapejs }}',
+    maxZoom: 19
+  })
+});
+{% endblock %}
+{% block options %}
+{{ block.super }}
+{% if disabled %}
+document.addEventListener('DOMContentLoaded', function () {
+  {{ module }}.interactions.draw.setActive(false);
+  {{ module }}.interactions.modify.setActive(false);
+});
+{% endif %}
+{% endblock %}
